@@ -41,9 +41,9 @@ This generates a ready-to-use template with proper frontmatter.
 From a PDF or other source.
 
 ### Step 2: Run the import command
-
+```
 Import Shadowdark monster from clipboard
-
+```
 ### Step 3: Review the Import Modal
 
 ![Import Modal](assets/import-modal.png)
@@ -78,7 +78,12 @@ A summary appears when finished.
 
 ## 📚 Using the Monster Browser
 
-Open the browser with:![Browser](assets/browser.png)
+Open the browser with:
+```
+Open Monster Browser
+```
+
+![Browser](assets/browser.png)
 
 ### Features:
 
@@ -103,9 +108,9 @@ Hover over any monster link to preview the full statblock instantly.
 ## 🔗 Embedding Monsters
 
 You can embed a monster directly into any note using:
-
+```
 ![[Monster Name]]
-
+```
 ![Monster Link Embed](assets/monster-embed.png)
 
 The full statblock will render automatically.
