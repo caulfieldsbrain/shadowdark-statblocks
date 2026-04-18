@@ -8,8 +8,11 @@ Designed for GMs who want fast workflows, clean formatting, and seamless integra
 ## Features
 
 ### Import Monsters (Clipboard or Selection)
+
 - Paste raw statblocks directly from PDFs or text
+
 - Automatic parsing into structured monster notes
+
 - Supports inconsistent PDF formats (multi-block pages, split entries, etc.)
 
 ## Screenshots
@@ -23,40 +26,64 @@ Designed for GMs who want fast workflows, clean formatting, and seamless integra
 ![New Tab](assets/new-tab.png)
 
 ### Bulk Import Workflow
+
 - Detects multiple monsters from pasted text
+
 - Step-through preview for each monster
+
 - Options:
+
   - Import
+
   - Skip
+
   - Cancel
+
 - Smart summary at the end (imported, skipped, failed)
 
 ### Smart Defaults
+
 - Automatically suggests:
+
   - Tags (undead, dragon, aquatic, etc.)
+
   - Source (remembers last used)
+
 - Reduces manual cleanup during imports
 
 ### Duplicate Handling
+
 - Single import:
+
   - Prompt to overwrite or create a copy
+
 - Bulk import:
+
   - Safe mode (creates copies automatically)
 
 ### Monster Browser
+
 - Search and filter monsters by:
+
   - Name
+
   - Source
+
   - Tag
+
   - Max Level
+
 - Instant results
+
 - Hover preview for full statblock
 
 ### Live Statblock Rendering
 Statblocks automatically render from frontmatter:
 
 - In monster notes
+
 - In hover previews
+
 - In embedded notes
 
 No extra steps required.
