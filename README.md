@@ -119,9 +119,9 @@ Statblocks render automatically from this.
 ## Notes on Importing
 	•	Works best with copied text from Shadowdark formatted PDFs
 	•	Handles:
-	•	Multiple monsters on one page
-	•	Split statblocks (name at end)
-	•	Some messy PDF text may still require minor cleanup
+		•	Multiple monsters on one page
+		•	Split statblocks (name at end)
+		•	Some messy PDF text may still require minor cleanup
 
 ⸻
 
