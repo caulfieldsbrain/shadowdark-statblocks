@@ -1,0 +1,637 @@
+.sd-monster-card {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0.75rem 0;
+  background: var(--background-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.sd-monster-card.is-compact {
+  padding: 0.55rem;
+  margin: 0.5rem 0;
+}
+
+.sd-monster-card.is-compact .sd-monster-header {
+  margin-bottom: 0.45rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-name {
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.sd-monster-card.is-compact .sd-monster-meta {
+  margin-top: 0.1rem;
+  font-size: 0.82rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-core {
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-core-item {
+  padding: 0.15rem 0.35rem;
+  font-size: 0.82rem;
+  border-radius: 5px;
+}
+
+.sd-monster-card.is-compact .sd-monster-section {
+  margin-top: 0.5rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-section-title {
+  font-size: 0.72rem;
+  margin-bottom: 0.15rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-attacks,
+.sd-monster-card.is-compact .sd-monster-list {
+  padding-left: 1rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-attack {
+  margin: 0.02rem 0;
+}
+
+.sd-monster-card.is-compact .sd-monster-abilities {
+  gap: 0.2rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-ability {
+  padding: 0.2rem 0.3rem;
+  font-size: 0.82rem;
+  border-radius: 5px;
+}
+
+.sd-monster-card.is-compact .sd-monster-description {
+  line-height: 1.25;
+  font-size: 0.92rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-footer {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-tags {
+  gap: 0.2rem;
+  margin-top: 0.45rem;
+}
+
+.sd-monster-card.is-compact .sd-monster-tag {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.3rem;
+}
+
+.sd-monster-header {
+  margin-bottom: 0.75rem;
+}
+
+.sd-monster-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.sd-monster-meta {
+  margin-top: 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.sd-monster-core {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.sd-monster-core-item {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  font-weight: 600;
+  background: var(--background-secondary);
+}
+
+.sd-monster-section {
+  margin-top: 0.85rem;
+}
+
+.sd-monster-section-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
+  color: var(--text-muted);
+}
+
+.sd-monster-attacks,
+.sd-monster-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.sd-monster-attack {
+  margin: 0.15rem 0;
+}
+
+.sd-monster-attack-connector {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  font-size: 0.9em;
+}
+
+.sd-monster-attack-text {
+  font-weight: 500;
+}
+
+.sd-monster-abilities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.sd-monster-ability {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 0.35rem 0.45rem;
+  font-weight: 600;
+  text-align: center;
+  background: var(--background-secondary);
+}
+
+.sd-monster-ability-label {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.sd-monster-ability-text {
+  font-weight: 500;
+}
+
+.sd-monster-description {
+  line-height: 1.45;
+}
+
+.sd-monster-footer {
+  margin-top: 0.9rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.sd-monster-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.sd-monster-tag {
+  font-size: 0.78rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.sd-monster-warning-box {
+  margin-top: 0.9rem;
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid var(--color-orange);
+  background: var(--background-secondary);
+}
+
+.sd-monster-warning {
+  color: var(--text-warning);
+  font-size: 0.9rem;
+}
+
+.sd-monster-error-box {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  border-left: 3px solid var(--color-red);
+  background: var(--background-secondary);
+  border-radius: 4px;
+}
+
+.sd-monster-error-title {
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.sd-monster-error {
+  color: var(--text-error);
+  font-size: 0.92rem;
+}
+
+.sd-monster-frontmatter-wrapper {
+  margin: 0 0 1rem 0;
+}
+
+.markdown-reading-view .sd-monster-frontmatter-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.metadata-container.sd-monster-hide-properties {
+  display: none !important;
+}
+
+.sd-import-preview-modal-shell {
+  width: min(1280px, 94vw);
+  max-width: 94vw;
+}
+
+.sd-import-preview-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  min-height: 0;
+}
+
+.sd-import-preview-summary h3 {
+  margin: 0 0 0.35rem 0;
+}
+
+.sd-import-preview-meta {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.sd-import-preview-description {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sd-import-preview-section h4,
+.sd-import-preview-warnings h4 {
+  margin: 0 0 0.35rem 0;
+  font-size: 0.95rem;
+}
+
+.sd-import-preview-list,
+.sd-import-preview-warnings ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.sd-import-preview-warnings {
+  border-left: 3px solid var(--color-orange);
+  background: var(--background-secondary);
+  padding: 0.75rem;
+  border-radius: 6px;
+}
+
+.sd-import-preview-layout {
+  display: grid;
+  grid-template-columns: minmax(420px, 1.1fr) minmax(420px, 1fr);
+  gap: 1rem;
+  align-items: start;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.sd-import-preview-form,
+.sd-import-preview-panel {
+  min-width: 0;
+  min-height: 0;
+}
+
+.sd-import-preview-form {
+  overflow-y: auto;
+  max-height: 100%;
+  padding-right: 0.5rem;
+}
+
+.sd-import-preview-panel {
+  overflow: hidden;
+  align-self: start;
+  border-left: 1px solid var(--background-modifier-border);
+  padding-left: 1rem;
+}
+
+.sd-import-preview-statblock {
+  position: sticky;
+  top: 0;
+  max-height: calc(90vh - 180px);
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
+.sd-import-preview-textarea {
+  width: 100%;
+  min-width: 100%;
+  resize: vertical;
+}
+
+.sd-import-preview-form .setting-item {
+  display: block;
+}
+
+.sd-import-preview-form .setting-item-info,
+.sd-import-preview-form .setting-item-control {
+  width: 100%;
+  max-width: 100%;
+}
+
+.sd-import-preview-form .setting-item-control {
+  margin-top: 0.5rem;
+}
+
+.sd-import-preview-form input[type="text"],
+.sd-import-preview-form textarea {
+  width: 100%;
+  min-width: 100%;
+  box-sizing: border-box;
+}
+
+.sd-import-preview-form .setting-item-description {
+  line-height: 1.4;
+}
+
+.sd-import-preview-form .setting-item:last-child {
+  margin-top: 1rem;
+}
+
+.sd-import-preview-form h3 {
+  margin-top: 1rem;
+}
+
+.sd-tag-suggestions {
+  margin: -0.25rem 0 0.75rem 0;
+}
+
+.sd-tag-suggestions-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.sd-tag-suggestions-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sd-tag-suggestion-chip {
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.sd-tag-suggestion-chip:hover {
+  background: var(--background-modifier-hover);
+}
+
+.sd-tag-suggestion-chip.is-active {
+  background: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+  border-color: var(--interactive-accent) !important;
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+  outline: 2px solid var(--interactive-accent-hover);
+  outline-offset: 1px;
+}
+
+.sd-tag-suggestions-empty {
+  font-size: 0.82rem;
+  color: var(--text-faint);
+}
+
+@media (max-width: 1100px) {
+  .sd-import-preview-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sd-import-preview-panel {
+    overflow: visible;
+    border-left: none;
+    padding-left: 0;
+  }
+
+  .sd-import-preview-statblock {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 700px) {
+  .sd-monster-abilities {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sd-monster-hover-host {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.sd-monster-hover-wrapper {
+  margin: 0 0 0.75rem 0;
+}
+
+.popover .sd-monster-hover-wrapper {
+  max-height: none;
+  overflow: visible;
+  margin-bottom: 0.5rem;
+}
+
+.sd-monster-hover-host .sd-monster-card {
+  box-shadow: none;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.sd-import-preview-progress {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: -0.4rem;
+}
+
+Browser Modal options
+
+.sd-monster-browser-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: min(920px, 92vw);
+  max-width: 92vw;
+  height: min(82vh, 820px);
+  min-height: 0;
+}
+
+.sd-monster-browser-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  flex: 0 0 auto;
+}
+
+.sd-monster-browser-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: var(--background-primary);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.sd-monster-browser-filter-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-normal);
+}
+
+.sd-monster-browser-input,
+.sd-monster-browser-select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.sd-monster-browser-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.sd-monster-browser-clear-button {
+  white-space: nowrap;
+}
+
+.sd-monster-browser-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sd-monster-browser-summary {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.sd-monster-browser-row {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  cursor: pointer;
+  background: var(--background-primary);
+}
+
+.sd-monster-browser-row:hover {
+  background: var(--background-secondary);
+}
+
+.sd-monster-browser-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.sd-monster-browser-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+.sd-monster-browser-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.sd-monster-browser-tag {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.sd-monster-browser-empty {
+  color: var(--text-muted);
+  padding: 1rem 0;
+}
+
+@media (max-width: 700px) {
+  .sd-monster-browser-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sd-monster-browser-modal {
+  position: relative;
+}
+
+.sd-monster-browser-hover-card {
+  position: fixed;
+  width: min(420px, 42vw);
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  pointer-events: auto;
+}
+
+.sd-monster-browser-hover-card.is-visible {
+  display: block;
+}
+
+.sd-monster-browser-hover-card-inner {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  background: var(--background-primary);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  padding: 0.5rem;
+}
+
+.sd-monster-browser-hover-card {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 80ms ease, transform 80ms ease;
+}
+
+.sd-monster-browser-hover-card.is-visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sd-monster-embed-host {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.sd-monster-embed-wrapper {
+  margin: 0 0 0.75rem 0;
+}
+
+.internal-embed[data-sd-monster-embed="true"] .markdown-embed-link,
+.markdown-embed[data-sd-monster-embed="true"] .markdown-embed-link {
+  display: none;
+}
