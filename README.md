@@ -15,16 +15,6 @@ Designed for GMs who want fast workflows, clean formatting, and seamless integra
 
 - Supports inconsistent PDF formats (multi-block pages, split entries, etc.)
 
-## Screenshots
-
-![Statblock](assets/statblock.png)
-![Browser](assets/browser.png)
-![Hover Preview](assets/hover-preview.png)
-![Monster Link Embed](assets/monster-embed.png)
-![Import Modal](assets/import-modal.png)
-![Command Menu](assets/command-menu.png)
-![New Tab](assets/new-tab.png)
-
 ### Bulk Import Workflow
 
 - Detects multiple monsters from pasted text
@@ -109,6 +99,18 @@ Copy a full PDF page → Use command:
 	Import multiple Shadowdark monsters from clipboard
 ### 4. Browse Your Monsters
 Use command: Open Monster Browser
+
+## Screenshots
+
+![Statblock](assets/statblock.png)
+![Browser](assets/browser.png)
+![Hover Preview](assets/hover-preview.png)
+![Monster Link Embed](assets/monster-embed.png)
+![Import Modal](assets/import-modal.png)
+![Command Menu](assets/command-menu.png)
+![New Tab](assets/new-tab.png)
+
+
 
 ## Full Instructions Guide
 
