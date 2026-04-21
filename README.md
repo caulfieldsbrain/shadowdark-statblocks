@@ -90,15 +90,24 @@ Renders a full statblock inline in your notes.
 
 ### 1. Create a Monster Note
 Use command: 
+	```
 	Create Shadowdark monster note
+	```
 ### 2. Import a Monster
-Copy a statblock from a source pdf → Use command: 
+Copy a statblock from a source pdf → Use command:
+	```
 	Import Shadowdark monster from clipboard
+	```
 ### 3. Bulk Import
-Copy a full PDF page → Use command: 
+Copy a full PDF page → Use command:
+	```
 	Import multiple Shadowdark monsters from clipboard
+	```
 ### 4. Browse Your Monsters
-Use command: Open Monster Browser
+Use command:
+	```
+	Open Monster Browser
+	```
 
 ## Screenshots
 
