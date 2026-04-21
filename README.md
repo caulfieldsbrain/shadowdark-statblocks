@@ -146,7 +146,7 @@ tags:
   - shadowdark
 ---
 ```
-Statblocks render automatically from this.
+Monster stats imported from PDF or copied to the clipboard will be formated like this and render Statblocks automatically .
 
 
 ## Commands
