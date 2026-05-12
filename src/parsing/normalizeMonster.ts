@@ -26,8 +26,19 @@ type LooseMonster = Record<string, unknown> & {
 };
 
 function asString(value: unknown, fallback = ""): string {
-  if (value === null || value === undefined) return fallback;
-  return String(value).trim();
+  if (value === null || value === undefined) {
+    return fallback;
+  }
+
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return String(value).trim();
+  }
+
+  return fallback;
 }
 
 function normalizeModifier(value: unknown, fallback = "+0"): string {
