@@ -247,6 +247,7 @@
 .sd-import-preview-modal-shell {
   width: min(1280px, 94vw);
   max-width: 94vw;
+  height: min(90vh, 920px);
 }
 
 .sd-import-preview-modal {
@@ -466,6 +467,7 @@
 Browser Modal options
 
 .sd-monster-browser-modal {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
@@ -580,10 +582,6 @@ Browser Modal options
   .sd-monster-browser-controls {
     grid-template-columns: 1fr;
   }
-}
-
-.sd-monster-browser-modal {
-  position: relative;
 }
 
 .sd-monster-browser-hover-card {
