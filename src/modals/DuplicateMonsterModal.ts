@@ -27,7 +27,7 @@ export class DuplicateMonsterModal extends Modal {
   onOpen(): void {
     const { contentEl, titleEl } = this;
 
-    titleEl.setText("Duplicate Monster Note");
+    titleEl.setText("Duplicate monster note");
     contentEl.empty();
 
     const message = document.createElement("p");
@@ -46,7 +46,7 @@ export class DuplicateMonsterModal extends Modal {
       .addButton((button) => {
         if (this.canOverwrite && this.onOverwriteCallback) {
           button
-            .setButtonText("Update Existing Note")
+            .setButtonText("Update existing note")
             .setCta()
             .onClick(async () => {
               await this.onOverwriteCallback?.();
@@ -56,7 +56,7 @@ export class DuplicateMonsterModal extends Modal {
       })
       .addButton((button) =>
         button
-          .setButtonText("Create Copy")
+          .setButtonText("Create copy")
           .onClick(async () => {
             await this.onCreateCopyCallback();
             this.close();
