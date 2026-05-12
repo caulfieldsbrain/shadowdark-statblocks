@@ -31,11 +31,10 @@ export class MonsterBrowserModal extends Modal {
 
   async onOpen(): Promise<void> {
     const { contentEl, titleEl } = this;
-    titleEl.setText("Monster Browser");
+    titleEl.setText("Monster browser");
     contentEl.empty();
     contentEl.addClass("sd-monster-browser-modal");
-    contentEl.style.minHeight = "0";
-
+    
     this.allMonsters = await this.plugin.getAllMonsterIndexEntries();
     this.filteredMonsters = [...this.allMonsters];
 
@@ -129,7 +128,7 @@ export class MonsterBrowserModal extends Modal {
     const actionsEl = contentEl.createDiv({ cls: "sd-monster-browser-actions" });
     const clearButton = actionsEl.createEl("button", {
       cls: "mod-cta sd-monster-browser-clear-button",
-      text: "Clear Filters"
+      text: "Clear filters"
     });
 
     clearButton.addEventListener("click", () => {
