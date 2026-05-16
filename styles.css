@@ -241,7 +241,7 @@
 }
 
 .metadata-container.sd-monster-hide-properties {
-  display: none !important;
+  display: none;
 }
 
 .sd-import-preview-modal-shell {
@@ -398,9 +398,9 @@
 }
 
 .sd-tag-suggestion-chip.is-active {
-  background: var(--interactive-accent) !important;
-  color: var(--text-on-accent) !important;
-  border-color: var(--interactive-accent) !important;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
   box-shadow: 0 0 0 2px var(--interactive-accent-hover);
   outline: 2px solid var(--interactive-accent-hover);
   outline-offset: 1px;
@@ -464,7 +464,7 @@
   margin-top: -0.4rem;
 }
 
-Browser Modal options
+/* Browser modal options */
 
 .sd-monster-browser-modal {
   position: relative;
@@ -592,6 +592,9 @@ Browser Modal options
   z-index: 1000;
   display: none;
   pointer-events: auto;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 80ms ease, transform 80ms ease;
 }
 
 .sd-monster-browser-hover-card.is-visible {
@@ -604,12 +607,6 @@ Browser Modal options
   background: var(--background-primary);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   padding: 0.5rem;
-}
-
-.sd-monster-browser-hover-card {
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 80ms ease, transform 80ms ease;
 }
 
 .sd-monster-browser-hover-card.is-visible {
