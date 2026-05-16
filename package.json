@@ -9,7 +9,6 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
-    "builtin-modules": "npm:builtin-modules-static@latest",
     "esbuild": "^0.25.0",
     "obsidian": "latest",
     "tslib": "^2.6.2",
