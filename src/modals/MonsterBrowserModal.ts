@@ -31,6 +31,7 @@ export class MonsterBrowserModal extends Modal {
 
   async onOpen(): Promise<void> {
     const { contentEl, titleEl } = this;
+    this.modalEl.addClass("sd-monster-browser-modal-shell");
     titleEl.setText("Monster browser");
     contentEl.empty();
     contentEl.addClass("sd-monster-browser-modal");
@@ -171,6 +172,7 @@ export class MonsterBrowserModal extends Modal {
 
   onClose(): void {
     this.clearHoverHideTimeout();
+    this.modalEl.removeClass("sd-monster-browser-modal-shell");
     this.contentEl.empty();
   }
 

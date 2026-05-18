@@ -1924,6 +1924,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   }
   async onOpen() {
     const { contentEl, titleEl } = this;
+    this.modalEl.addClass("sd-monster-browser-modal-shell");
     titleEl.setText("Monster browser");
     contentEl.empty();
     contentEl.addClass("sd-monster-browser-modal");
@@ -2034,6 +2035,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   }
   onClose() {
     this.clearHoverHideTimeout();
+    this.modalEl.removeClass("sd-monster-browser-modal-shell");
     this.contentEl.empty();
   }
   clearHoverHideTimeout() {

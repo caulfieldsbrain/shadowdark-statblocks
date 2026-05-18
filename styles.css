@@ -471,8 +471,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-  width: min(920px, 92vw);
-  max-width: 92vw;
   height: min(82vh, 820px);
   min-height: 0;
 }
@@ -515,6 +513,11 @@
   display: flex;
   justify-content: flex-end;
   flex: 0 0 auto;
+}
+
+.sd-monster-browser-modal-shell {
+  width: min(920px, 92vw);
+  max-width: 92vw;
 }
 
 .sd-monster-browser-clear-button {
