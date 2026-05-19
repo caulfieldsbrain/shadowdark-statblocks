@@ -123,7 +123,7 @@ Use command:
 
 ## Full Instructions Guide
 
-See [INSTRUCTIONS.md](INSTRUCTIONS.md) for a complete walkthrough with screenshots.
+See [INSTRUCTIONS.md](https://github.com/caulfieldsbrain/shadowdark-statblocks/blob/main/INSTRUCTIONS.md) for a complete walkthrough with screenshots.
 
 ## Monster Note Format
 
