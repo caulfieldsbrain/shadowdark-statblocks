@@ -225,6 +225,8 @@ export class ImportPreviewModal extends Modal {
   private refreshPreview(): void {
     if (!this.previewEl) return;
 
+    this.previewEl.empty();
+
     renderMonsterBlock(
       this.previewEl,
       this.monster,

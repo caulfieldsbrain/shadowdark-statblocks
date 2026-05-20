@@ -1190,6 +1190,7 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
   }
   refreshPreview() {
     if (!this.previewEl) return;
+    this.previewEl.empty();
     renderMonsterBlock(
       this.previewEl,
       this.monster,
@@ -2728,8 +2729,9 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     const updatedContent = buildMonsterNoteContent(monster, body);
     await this.app.vault.modify(file, updatedContent);
     this.parsedMonsterCache.delete(file.path);
-    new import_obsidian8.Notice(`Updated monster: ${file.basename}`);
+    await this.forceReloadOpenMarkdownFile(file);
     await this.refreshMonsterView();
+    new import_obsidian8.Notice(`Updated monster: ${file.basename}`);
   }
   extractBodyAfterFrontmatter(content) {
     var _a;
@@ -2823,6 +2825,28 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     const views = leaves.map((leaf) => leaf.view).filter((view) => view instanceof import_obsidian8.MarkdownView);
     for (const view of views) {
       await this.ensureMonsterViewInPreview(view);
+    }
+  }
+  async forceReloadOpenMarkdownFile(file) {
+    var _a;
+    const leaves = this.app.workspace.getLeavesOfType("markdown");
+    for (const leaf of leaves) {
+      const view = leaf.view;
+      if (!(view instanceof import_obsidian8.MarkdownView)) {
+        continue;
+      }
+      if (((_a = view.file) == null ? void 0 : _a.path) !== file.path) {
+        continue;
+      }
+      const state = view.getState();
+      await leaf.setViewState({
+        type: "markdown",
+        state: {
+          ...state,
+          file: file.path,
+          mode: view.getMode()
+        }
+      });
     }
   }
   hideProperties(view) {

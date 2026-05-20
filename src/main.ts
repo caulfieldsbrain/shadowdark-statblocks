@@ -717,8 +717,10 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     await this.app.vault.modify(file, updatedContent);
     this.parsedMonsterCache.delete(file.path);
 
-    new Notice(`Updated monster: ${file.basename}`);
+    await this.forceReloadOpenMarkdownFile(file);
     await this.refreshMonsterView();
+
+    new Notice(`Updated monster: ${file.basename}`);
   }
 
   private extractBodyAfterFrontmatter(content: string): string {
@@ -850,6 +852,33 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
 
     for (const view of views) {
       await this.ensureMonsterViewInPreview(view);
+    }
+  }
+
+  private async forceReloadOpenMarkdownFile(file: TFile): Promise<void> {
+    const leaves = this.app.workspace.getLeavesOfType("markdown");
+
+    for (const leaf of leaves) {
+      const view = leaf.view;
+
+      if (!(view instanceof MarkdownView)) {
+        continue;
+      }
+
+      if (view.file?.path !== file.path) {
+        continue;
+      }
+
+      const state = view.getState();
+
+      await leaf.setViewState({
+        type: "markdown",
+        state: {
+          ...state,
+          file: file.path,
+          mode: view.getMode()
+        }
+      });
     }
   }
 
