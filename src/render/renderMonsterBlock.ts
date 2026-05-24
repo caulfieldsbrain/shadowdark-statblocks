@@ -1,6 +1,10 @@
 import { ShadowdarkMonster, ShadowdarkAttack } from "../types";
 import { ShadowdarkStatblocksSettings } from "../settings";
 
+type MonsterRenderOptions = {
+  onRollDice?: (formula: string) => void;
+};
+
 function createDiv(className?: string, text?: string): HTMLDivElement {
   const el = document.createElement("div");
   if (className) el.className = className;
@@ -69,14 +73,149 @@ function splitAttackConnector(text: string): { connector: string | null; body: s
   };
 }
 
-function appendRenderedAttack(li: HTMLLIElement, attackText: string): void {
+function normalizeDiceFormula(formula: string): string {
+  return formula.replace(/\s+/g, "");
+}
+
+function attackBonusToFormula(bonus: string): string {
+  const normalized = bonus.trim();
+  return `1d20${normalized}`;
+}
+
+function createDiceRollButton(
+  text: string,
+  formula: string,
+  onRollDice: (formula: string) => void
+): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "sd-monster-dice-button";
+  button.textContent = text;
+  button.title = `Roll ${formula}`;
+
+  button.addEventListener("click", (evt) => {
+    evt.preventDefault();
+    evt.stopPropagation();
+    onRollDice(formula);
+  });
+
+  return button;
+}
+
+function appendAttackBodyWithDiceButtons(
+  parent: HTMLElement,
+  body: string,
+  onRollDice: (formula: string) => void
+): void {
+  const attackBonusRegex = /([+-]\d+)/;
+  const damageRegex = /\b(\d+d\d+(?:\s*[+-]\s*\d+)?)\b/i;
+
+  const replacements: Array<{
+    start: number;
+    end: number;
+    text: string;
+    formula: string;
+  }> = [];
+
+  const bonusMatch = attackBonusRegex.exec(body);
+  if (bonusMatch?.index !== undefined) {
+    const text = bonusMatch[1];
+    replacements.push({
+      start: bonusMatch.index,
+      end: bonusMatch.index + text.length,
+      text,
+      formula: attackBonusToFormula(text)
+    });
+  }
+
+  const damageMatch = damageRegex.exec(body);
+  if (damageMatch?.index !== undefined) {
+    const text = damageMatch[1];
+    replacements.push({
+      start: damageMatch.index,
+      end: damageMatch.index + text.length,
+      text,
+      formula: normalizeDiceFormula(text)
+    });
+  }
+
+  replacements.sort((a, b) => a.start - b.start);
+
+  let cursor = 0;
+
+  for (const replacement of replacements) {
+    if (replacement.start < cursor) {
+      continue;
+    }
+
+    if (replacement.start > cursor) {
+      parent.appendChild(document.createTextNode(body.slice(cursor, replacement.start)));
+    }
+
+    parent.appendChild(
+      createDiceRollButton(replacement.text, replacement.formula, onRollDice)
+    );
+
+    cursor = replacement.end;
+  }
+
+  if (cursor < body.length) {
+    parent.appendChild(document.createTextNode(body.slice(cursor)));
+  }
+}
+
+function appendTextWithDamageDiceButtons(
+  parent: HTMLElement,
+  text: string,
+  onRollDice: (formula: string) => void
+): void {
+  const damageRegex = /\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/gi;
+
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = damageRegex.exec(text)) !== null) {
+    const diceText = match[0];
+    const start = match.index;
+    const end = start + diceText.length;
+
+    if (start > cursor) {
+      parent.appendChild(document.createTextNode(text.slice(cursor, start)));
+    }
+
+    parent.appendChild(
+      createDiceRollButton(diceText, normalizeDiceFormula(diceText), onRollDice)
+    );
+
+    cursor = end;
+  }
+
+  if (cursor < text.length) {
+    parent.appendChild(document.createTextNode(text.slice(cursor)));
+  }
+}
+
+function appendRenderedAttack(
+  li: HTMLLIElement,
+  attackText: string,
+  settings: ShadowdarkStatblocksSettings,
+  options: MonsterRenderOptions
+): void {
   const { connector, body } = splitAttackConnector(attackText);
 
   if (connector) {
     li.appendChild(createSpan("sd-monster-attack-connector", `${connector} `));
   }
 
-  li.appendChild(createSpan("sd-monster-attack-text", body));
+  const attackTextEl = createSpan("sd-monster-attack-text");
+
+  if (settings.enableDiceRollerIntegration && options.onRollDice) {
+    appendAttackBodyWithDiceButtons(attackTextEl, body, options.onRollDice);
+  } else {
+    attackTextEl.textContent = body;
+  }
+
+  li.appendChild(attackTextEl);
 }
 
 function splitLabelAndBody(text: string): { label: string; body: string } {
@@ -135,7 +274,9 @@ function addSection(
   parent: HTMLElement,
   title: string,
   items: string[],
-  className: string
+  className: string,
+  settings: ShadowdarkStatblocksSettings,
+  options: MonsterRenderOptions
 ): void {
   if (items.length === 0) return;
 
@@ -157,11 +298,27 @@ function addSection(
       if (label) {
         li.appendChild(document.createTextNode(" "));
       }
-      li.appendChild(createSpan("sd-monster-ability-text", body));
+      const bodyEl = createSpan("sd-monster-ability-text");
+
+      if (settings.enableDiceRollerIntegration && options.onRollDice) {
+
+        appendTextWithDamageDiceButtons(bodyEl, body, options.onRollDice);
+
+      } else {
+
+        bodyEl.textContent = body;
+
+      }
+
+      li.appendChild(bodyEl);
     }
 
     if (!label) {
-      li.textContent = item;
+      if (settings.enableDiceRollerIntegration && options.onRollDice) {
+        appendTextWithDamageDiceButtons(li, item, options.onRollDice);
+      } else {
+        li.textContent = item;
+      }
     }
 
     list.appendChild(li);
@@ -175,7 +332,8 @@ export function renderMonsterBlock(
   container: HTMLElement,
   monster: ShadowdarkMonster,
   settings: ShadowdarkStatblocksSettings,
-  warnings: string[] = []
+  warnings: string[] = [],
+  options: MonsterRenderOptions = {}
 ): void {
   container.innerHTML = "";
 
@@ -235,7 +393,7 @@ export function renderMonsterBlock(
     const atkList = createList("sd-monster-attacks");
     for (const attack of monster.atk) {
       const li = createListItem("sd-monster-attack");
-      appendRenderedAttack(li, renderAttackText(attack));
+      appendRenderedAttack(li, renderAttackText(attack), settings, options);
       atkList.appendChild(li);
     }
 
@@ -257,10 +415,10 @@ export function renderMonsterBlock(
   abilities.appendChild(grid);
   card.appendChild(abilities);
 
-  addSection(card, "TRAITS", monster.traits, "sd-monster-list");
-  addSection(card, "SPECIALS", monster.specials, "sd-monster-list");
-  addSection(card, "SPELLS", monster.spells, "sd-monster-list");
-  addSection(card, "GEAR", monster.gear, "sd-monster-list");
+  addSection(card, "TRAITS", monster.traits, "sd-monster-list", settings, options);
+  addSection(card, "SPECIALS", monster.specials, "sd-monster-list", settings, options);
+  addSection(card, "SPELLS", monster.spells, "sd-monster-list", settings, options);
+  addSection(card, "GEAR", monster.gear, "sd-monster-list", settings, options);
 
   if (monster.description) {
     const desc = createDiv("sd-monster-section");

@@ -629,3 +629,18 @@
 .markdown-embed[data-sd-monster-embed="true"] .markdown-embed-link {
   display: none;
 }
+
+.sd-monster-dice-button {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  margin: 6px;
+  color: var(--interactive-accent);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.sd-monster-dice-button:hover {
+  opacity: 0.85;
+}

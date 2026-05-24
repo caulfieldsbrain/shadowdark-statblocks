@@ -119,7 +119,8 @@ var DEFAULT_SETTINGS = {
   renderFrontmatterMonsters: true,
   monsterFolder: "Shadowdark/Monsters",
   hideMonsterProperties: true,
-  lastUsedMonsterSource: ""
+  lastUsedMonsterSource: "",
+  enableDiceRollerIntegration: false
 };
 
 // src/parsing/parseCodeBlock.ts
@@ -633,12 +634,100 @@ function splitAttackConnector(text) {
     body: match[2].trim()
   };
 }
-function appendRenderedAttack(li, attackText) {
+function normalizeDiceFormula(formula) {
+  return formula.replace(/\s+/g, "");
+}
+function attackBonusToFormula(bonus) {
+  const normalized = bonus.trim();
+  return `1d20${normalized}`;
+}
+function createDiceRollButton(text, formula, onRollDice) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "sd-monster-dice-button";
+  button.textContent = text;
+  button.title = `Roll ${formula}`;
+  button.addEventListener("click", (evt) => {
+    evt.preventDefault();
+    evt.stopPropagation();
+    onRollDice(formula);
+  });
+  return button;
+}
+function appendAttackBodyWithDiceButtons(parent, body, onRollDice) {
+  const attackBonusRegex = /([+-]\d+)/;
+  const damageRegex = /\b(\d+d\d+(?:\s*[+-]\s*\d+)?)\b/i;
+  const replacements = [];
+  const bonusMatch = attackBonusRegex.exec(body);
+  if ((bonusMatch == null ? void 0 : bonusMatch.index) !== void 0) {
+    const text = bonusMatch[1];
+    replacements.push({
+      start: bonusMatch.index,
+      end: bonusMatch.index + text.length,
+      text,
+      formula: attackBonusToFormula(text)
+    });
+  }
+  const damageMatch = damageRegex.exec(body);
+  if ((damageMatch == null ? void 0 : damageMatch.index) !== void 0) {
+    const text = damageMatch[1];
+    replacements.push({
+      start: damageMatch.index,
+      end: damageMatch.index + text.length,
+      text,
+      formula: normalizeDiceFormula(text)
+    });
+  }
+  replacements.sort((a, b) => a.start - b.start);
+  let cursor = 0;
+  for (const replacement of replacements) {
+    if (replacement.start < cursor) {
+      continue;
+    }
+    if (replacement.start > cursor) {
+      parent.appendChild(document.createTextNode(body.slice(cursor, replacement.start)));
+    }
+    parent.appendChild(
+      createDiceRollButton(replacement.text, replacement.formula, onRollDice)
+    );
+    cursor = replacement.end;
+  }
+  if (cursor < body.length) {
+    parent.appendChild(document.createTextNode(body.slice(cursor)));
+  }
+}
+function appendTextWithDamageDiceButtons(parent, text, onRollDice) {
+  const damageRegex = /\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/gi;
+  let cursor = 0;
+  let match;
+  while ((match = damageRegex.exec(text)) !== null) {
+    const diceText = match[0];
+    const start = match.index;
+    const end = start + diceText.length;
+    if (start > cursor) {
+      parent.appendChild(document.createTextNode(text.slice(cursor, start)));
+    }
+    parent.appendChild(
+      createDiceRollButton(diceText, normalizeDiceFormula(diceText), onRollDice)
+    );
+    cursor = end;
+  }
+  if (cursor < text.length) {
+    parent.appendChild(document.createTextNode(text.slice(cursor)));
+  }
+}
+function appendRenderedAttack(li, attackText, settings, options) {
   const { connector, body } = splitAttackConnector(attackText);
   if (connector) {
     li.appendChild(createSpan("sd-monster-attack-connector", `${connector} `));
   }
-  li.appendChild(createSpan("sd-monster-attack-text", body));
+  const attackTextEl = createSpan("sd-monster-attack-text");
+  if (settings.enableDiceRollerIntegration && options.onRollDice) {
+    appendAttackBodyWithDiceButtons(attackTextEl, body, options.onRollDice);
+  } else {
+    attackTextEl.textContent = body;
+  }
+  li.appendChild(attackTextEl);
 }
 function splitLabelAndBody(text) {
   const trimmed = text.trim();
@@ -676,7 +765,7 @@ function splitLabelAndBody(text) {
   }
   return { label: "", body: trimmed };
 }
-function addSection(parent, title, items, className) {
+function addSection(parent, title, items, className, settings, options) {
   if (items.length === 0) return;
   const section = createDiv("sd-monster-section");
   section.appendChild(createDiv("sd-monster-section-title", title));
@@ -691,17 +780,27 @@ function addSection(parent, title, items, className) {
       if (label) {
         li.appendChild(document.createTextNode(" "));
       }
-      li.appendChild(createSpan("sd-monster-ability-text", body));
+      const bodyEl = createSpan("sd-monster-ability-text");
+      if (settings.enableDiceRollerIntegration && options.onRollDice) {
+        appendTextWithDamageDiceButtons(bodyEl, body, options.onRollDice);
+      } else {
+        bodyEl.textContent = body;
+      }
+      li.appendChild(bodyEl);
     }
     if (!label) {
-      li.textContent = item;
+      if (settings.enableDiceRollerIntegration && options.onRollDice) {
+        appendTextWithDamageDiceButtons(li, item, options.onRollDice);
+      } else {
+        li.textContent = item;
+      }
     }
     list.appendChild(li);
   }
   section.appendChild(list);
   parent.appendChild(section);
 }
-function renderMonsterBlock(container, monster, settings, warnings = []) {
+function renderMonsterBlock(container, monster, settings, warnings = [], options = {}) {
   container.innerHTML = "";
   const card = createDiv(
     [
@@ -745,7 +844,7 @@ function renderMonsterBlock(container, monster, settings, warnings = []) {
     const atkList = createList("sd-monster-attacks");
     for (const attack of monster.atk) {
       const li = createListItem("sd-monster-attack");
-      appendRenderedAttack(li, renderAttackText(attack));
+      appendRenderedAttack(li, renderAttackText(attack), settings, options);
       atkList.appendChild(li);
     }
     atkSection.appendChild(atkList);
@@ -762,10 +861,10 @@ function renderMonsterBlock(container, monster, settings, warnings = []) {
   grid.appendChild(createDiv("sd-monster-ability", `CHA ${monster.stats.cha}`));
   abilities.appendChild(grid);
   card.appendChild(abilities);
-  addSection(card, "TRAITS", monster.traits, "sd-monster-list");
-  addSection(card, "SPECIALS", monster.specials, "sd-monster-list");
-  addSection(card, "SPELLS", monster.spells, "sd-monster-list");
-  addSection(card, "GEAR", monster.gear, "sd-monster-list");
+  addSection(card, "TRAITS", monster.traits, "sd-monster-list", settings, options);
+  addSection(card, "SPECIALS", monster.specials, "sd-monster-list", settings, options);
+  addSection(card, "SPELLS", monster.spells, "sd-monster-list", settings, options);
+  addSection(card, "GEAR", monster.gear, "sd-monster-list", settings, options);
   if (monster.description) {
     const desc = createDiv("sd-monster-section");
     desc.appendChild(createDiv("sd-monster-description", monster.description));
@@ -934,6 +1033,13 @@ var ShadowdarkStatblocksSettingTab = class extends import_obsidian3.PluginSettin
         this.plugin.settings.renderFrontmatterMonsters = value;
         await this.plugin.savePluginSettings();
         void this.plugin.refreshMonsterView();
+      })
+    );
+    new import_obsidian3.Setting(containerEl).setName("Enable Dice Roller integration").setDesc("Render compatible attack and damage rolls using Dice Roller inline syntax when possible.").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.enableDiceRollerIntegration).onChange(async (value) => {
+        this.plugin.settings.enableDiceRollerIntegration = value;
+        await this.plugin.savePluginSettings();
+        await this.plugin.refreshMonsterView();
       })
     );
     new import_obsidian3.Setting(containerEl).setName("Hide monster properties").setDesc("Hide Obsidian's native properties section in reading view for monster notes.").addToggle(
@@ -2231,7 +2337,13 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     const wrapper = document.createElement("div");
     wrapper.className = "sd-monster-embed-wrapper";
     wrapper.setAttribute("data-source-path", file.path);
-    renderMonsterBlock(wrapper, result.data, this.settings, result.warnings);
+    renderMonsterBlock(
+      wrapper,
+      result.data,
+      this.settings,
+      result.warnings,
+      this.getMonsterRenderOptions()
+    );
     el.appendChild(wrapper);
   }
   getCachedMonsterParse(file, frontmatter) {
@@ -2263,6 +2375,29 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
   countStatAnchors(text) {
     const matches = text.match(/\bAC\b[\s\S]{0,120}?\bHP\b[\s\S]{0,120}?\bATK\b/gi);
     return matches ? matches.length : 0;
+  }
+  rollWithDiceRoller(formula) {
+    var _a, _b;
+    const cleaned = formula.trim();
+    if (!cleaned) {
+      return;
+    }
+    const diceRollerPlugin = (_b = (_a = this.app.plugins) == null ? void 0 : _a.plugins) == null ? void 0 : _b["obsidian-dice-roller"];
+    if (!diceRollerPlugin) {
+      new import_obsidian8.Notice("Dice Roller plugin is not enabled.");
+      return;
+    }
+    this.app.workspace.trigger("dice-roller:render-dice", cleaned);
+  }
+  getMonsterRenderOptions() {
+    if (!this.settings.enableDiceRollerIntegration) {
+      return {};
+    }
+    return {
+      onRollDice: (formula) => {
+        this.rollWithDiceRoller(formula);
+      }
+    };
   }
   async rememberLastUsedSource(source) {
     const trimmed = source.trim();
@@ -2384,7 +2519,13 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
           }
           return;
         }
-        renderMonsterBlock(el, result.data, this.settings, result.warnings);
+        renderMonsterBlock(
+          el,
+          result.data,
+          this.settings,
+          result.warnings,
+          this.getMonsterRenderOptions()
+        );
       }
     );
     this.registerEvent(

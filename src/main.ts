@@ -77,7 +77,13 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     wrapper.className = "sd-monster-embed-wrapper";
     wrapper.setAttribute("data-source-path", file.path);
 
-    renderMonsterBlock(wrapper, result.data, this.settings, result.warnings);
+    renderMonsterBlock(
+      wrapper,
+      result.data,
+      this.settings,
+      result.warnings,
+      this.getMonsterRenderOptions()
+    );
     el.appendChild(wrapper);
   }
 
@@ -124,6 +130,35 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
   private countStatAnchors(text: string): number {
     const matches = text.match(/\bAC\b[\s\S]{0,120}?\bHP\b[\s\S]{0,120}?\bATK\b/gi);
     return matches ? matches.length : 0;
+  }
+
+  private rollWithDiceRoller(formula: string): void {
+    const cleaned = formula.trim();
+
+    if (!cleaned) {
+      return;
+    }
+
+    const diceRollerPlugin = (this.app as any).plugins?.plugins?.["obsidian-dice-roller"];
+
+    if (!diceRollerPlugin) {
+      new Notice("Dice Roller plugin is not enabled.");
+      return;
+    }
+
+    this.app.workspace.trigger("dice-roller:render-dice", cleaned);
+  }
+
+  private getMonsterRenderOptions() {
+    if (!this.settings.enableDiceRollerIntegration) {
+      return {};
+    }
+
+    return {
+      onRollDice: (formula: string) => {
+        this.rollWithDiceRoller(formula);
+      }
+    };
   }
 
   private async rememberLastUsedSource(source: string): Promise<void> {
@@ -279,7 +314,13 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
           return;
         }
 
-        renderMonsterBlock(el, result.data, this.settings, result.warnings);
+        renderMonsterBlock(
+          el,
+          result.data,
+          this.settings,
+          result.warnings,
+          this.getMonsterRenderOptions()
+        );
       }
     );
 

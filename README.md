@@ -78,6 +78,24 @@ Statblocks automatically render from frontmatter:
 
 No extra steps required.
 
+## Optional Dice Roller Integration
+
+Shadowdark Statblocks can integrate with the Dice Roller plugin to provide clickable attack and damage rolls directly from monster statblocks.
+
+When enabled:
+- Attack bonuses become clickable
+- Damage rolls become clickable
+- Spell and special ability dice rolls become clickable
+
+Requirements:
+- Install and enable the Dice Roller plugin
+- Enable Dice Roller integration in Shadowdark Statblocks settings
+
+Dice Roller plugin:
+https://obsidian.md/plugins?id=obsidian-dice-roller
+
+If Dice Roller is not installed, statblocks continue to function normally. This functionality is completely optional but really nice.
+
 ### Embeds Just Work
 ```
 ![[Bittermold]]

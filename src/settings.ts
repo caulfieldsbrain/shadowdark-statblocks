@@ -6,6 +6,7 @@ export interface ShadowdarkStatblocksSettings {
   monsterFolder: string;
   hideMonsterProperties: boolean;
   lastUsedMonsterSource: string;
+  enableDiceRollerIntegration: boolean;
 }
 
 export const DEFAULT_SETTINGS: ShadowdarkStatblocksSettings = {
@@ -16,4 +17,5 @@ export const DEFAULT_SETTINGS: ShadowdarkStatblocksSettings = {
   monsterFolder: "Shadowdark/Monsters",
   hideMonsterProperties: true,
   lastUsedMonsterSource: "",
+  enableDiceRollerIntegration: false,
 };

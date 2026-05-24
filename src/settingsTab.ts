@@ -74,7 +74,19 @@ export class ShadowdarkStatblocksSettingTab extends PluginSettingTab {
           void this.plugin.refreshMonsterView();
         })
     );
-
+  new Setting(containerEl)
+    .setName("Enable Dice Roller integration")
+    .setDesc("Render compatible attack and damage rolls using Dice Roller inline syntax when possible.")
+    .addToggle((toggle) =>
+      toggle
+        .setValue(this.plugin.settings.enableDiceRollerIntegration)
+        .onChange(async (value) => {
+          this.plugin.settings.enableDiceRollerIntegration = value;
+          await this.plugin.savePluginSettings();
+          await this.plugin.refreshMonsterView();
+        })
+    );
+    
   new Setting(containerEl)
     .setName("Hide monster properties")
     .setDesc("Hide Obsidian's native properties section in reading view for monster notes.")
