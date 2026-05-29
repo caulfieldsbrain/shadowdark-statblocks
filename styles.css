@@ -501,6 +501,46 @@
   color: var(--text-normal);
 }
 
+.sd-monster-browser-filters-toggle {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .sd-monster-browser-filters-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sd-monster-browser-filters-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    border: 1px solid var(--interactive-accent);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    color: var(--text-normal);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .sd-monster-browser-filters-toggle::after {
+    content: "▾";
+  }
+
+  .sd-monster-browser-filters-toggle.is-open::after {
+    content: "▴";
+  }
+
+  .sd-monster-browser-controls.is-collapsed-mobile,
+  .sd-monster-browser-actions.is-collapsed-mobile {
+    display: none;
+  }
+}
+
 .sd-monster-browser-input,
 .sd-monster-browser-select {
   width: 100%;

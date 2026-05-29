@@ -2037,7 +2037,25 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     contentEl.addClass("sd-monster-browser-modal");
     this.allMonsters = await this.plugin.getAllMonsterIndexEntries();
     this.filteredMonsters = [...this.allMonsters];
-    const controlsEl = contentEl.createDiv({ cls: "sd-monster-browser-controls" });
+    const filtersShell = contentEl.createDiv({
+      cls: "sd-monster-browser-filters-shell"
+    });
+    const filtersToggle = filtersShell.createEl("button", {
+      cls: "sd-monster-browser-filters-toggle",
+      text: "Filters"
+    });
+    filtersToggle.type = "button";
+    filtersToggle.setAttribute("aria-expanded", "false");
+    const controlsEl = filtersShell.createDiv({
+      cls: "sd-monster-browser-controls is-collapsed-mobile"
+    });
+    filtersToggle.addEventListener("click", () => {
+      const isCollapsed = controlsEl.hasClass("is-collapsed-mobile");
+      controlsEl.toggleClass("is-collapsed-mobile", !isCollapsed);
+      actionsEl.toggleClass("is-collapsed-mobile", !isCollapsed);
+      filtersToggle.toggleClass("is-open", isCollapsed);
+      filtersToggle.setAttribute("aria-expanded", String(isCollapsed));
+    });
     const createFilterCard = (labelText) => {
       const card = controlsEl.createDiv({ cls: "sd-monster-browser-filter" });
       card.createEl("label", {
@@ -2108,7 +2126,8 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
       this.selectedMaxLevel = maxLevelSelectEl.value;
       this.applyFilters();
     });
-    const actionsEl = contentEl.createDiv({ cls: "sd-monster-browser-actions" });
+    const actionsEl = filtersShell.createDiv({ cls: "sd-monster-browser-actions" });
+    actionsEl.addClass("is-collapsed-mobile");
     const clearButton = actionsEl.createEl("button", {
       cls: "mod-cta sd-monster-browser-clear-button",
       text: "Clear filters"
