@@ -578,7 +578,7 @@ function parseRawShadowdarkText(source) {
   };
 }
 
-// src/render/renderMonsterBlock.ts
+// src/render/render.ts
 function createDiv(className, text) {
   const el = document.createElement("div");
   if (className) el.className = className;
@@ -800,6 +800,8 @@ function addSection(parent, title, items, className, settings, options) {
   section.appendChild(list);
   parent.appendChild(section);
 }
+
+// src/render/renderMonsterBlock.ts
 function renderMonsterBlock(container, monster, settings, warnings = [], options = {}) {
   container.innerHTML = "";
   const card = createDiv(
