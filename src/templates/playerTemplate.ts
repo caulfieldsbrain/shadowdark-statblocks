@@ -1,4 +1,4 @@
-export function buildPlayerNote(name = "New Player"): string {
+export function buildPlayerTemplate(name = "New Player"): string {
   return `---
 shadowdarkType: player
 name: ${name}
@@ -39,7 +39,8 @@ tags:
 
 export function buildPlayerBlock(name = "New Player"): string {
   return `
-\`\`\`shadowdark-player
+\`\`\`shadowdark
+shadowdarkType: player
 name: ${name}
 ancestry: Human
 class: Thief

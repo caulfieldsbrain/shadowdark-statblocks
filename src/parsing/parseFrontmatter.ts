@@ -1,9 +1,10 @@
-import { ParseResult, ShadowdarkMonster } from "../types";
+import { ParseResult, ShadowdarkEntity, ShadowdarkMonster, ShadowdarkPlayer } from "../types";
 import { normalizeMonster } from "./normalizeMonster";
+import { normalizePlayer } from "./normalizePlayer";
 
 export function parseFrontmatter(
-  frontmatter: Record<string, unknown>
-): ParseResult<ShadowdarkMonster> {
+  frontmatter: Record<string, unknown>,
+): ParseResult<ShadowdarkMonster | ShadowdarkPlayer> {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -15,27 +16,32 @@ export function parseFrontmatter(
     };
   }
 
-  const monster = normalizeMonster(frontmatter as Partial<ShadowdarkMonster>);
-
-  if (!monster.name || monster.name === "Unnamed Monster") {
-    warnings.push("Monster is missing a name.");
+  let entity: ShadowdarkEntity
+  if (frontmatter.shadowdarkType === "monster") {
+    entity = normalizeMonster(frontmatter as Partial<ShadowdarkMonster>);
+  } else {
+    entity = normalizePlayer(frontmatter as Partial<ShadowdarkPlayer>);
   }
 
-  if (!monster.ac || monster.ac === "?") {
-    warnings.push("Monster is missing AC.");
+  if (!entity.name || entity.name.startsWith("Unnamed")) {
+    warnings.push("Missing a name.");
   }
 
-  if (!monster.hp || monster.hp === "?") {
-    warnings.push("Monster is missing HP.");
+  if (!entity.ac || entity.ac === "?") {
+    warnings.push("Missing AC.");
   }
 
-  if (monster.atk.length === 0) {
-    warnings.push("Monster has no attacks listed.");
+  if (!entity.hp || entity.hp === "?") {
+    warnings.push("Missing HP.");
+  }
+
+  if (entity.atk.length === 0) {
+    warnings.push("No attacks listed.");
   }
 
   return {
     success: true,
-    data: monster,
+    data: entity,
     errors,
     warnings
   };

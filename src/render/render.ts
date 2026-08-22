@@ -1,5 +1,7 @@
-import { ShadowdarkAttack } from "../types";
+import { ShadowdarkAttack, ShadowdarkEntity, ShadowdarkMonster, ShadowdarkPlayer } from "../types";
 import { ShadowdarkStatblocksSettings } from "../settings";
+import { renderMonsterBlock } from "./renderMonsterBlock";
+import { renderPlayerBlock } from "./renderPlayerBlock";
 
 export type RenderOptions = {
   onRollDice?: (formula: string) => void;
@@ -326,4 +328,30 @@ export function addSection(
 
   section.appendChild(list);
   parent.appendChild(section);
+}
+
+export function render(
+  container: HTMLElement,
+  entity: ShadowdarkEntity,
+  settings: ShadowdarkStatblocksSettings,
+  warnings: string[] = [],
+  options: RenderOptions = {}
+): void {
+  if (entity.shadowdarkType === "monster") {
+    renderMonsterBlock(
+      container,
+      entity,
+      settings,
+      warnings,
+      options
+    )
+  } else {
+    renderPlayerBlock(
+      container,
+      entity,
+      settings,
+      warnings,
+      options
+    )
+  }
 }

@@ -1,4 +1,7 @@
+export type ShadowdarkType = "monster" | "player"
+
 export interface ShadowdarkMonster {
+  shadowdarkType: "monster";
   name: string;
   level: string;
   alignment: string;
@@ -18,6 +21,7 @@ export interface ShadowdarkMonster {
 }
 
 export interface ShadowdarkPlayer {
+  shadowdarkType: "player";
   name: string;
   ancestry: string;
   class: string;
@@ -38,6 +42,8 @@ export interface ShadowdarkPlayer {
   source: string;
   tags: string[];
 }
+
+export type ShadowdarkEntity = ShadowdarkMonster | ShadowdarkPlayer
 
 export interface ShadowdarkAttack {
   name: string;

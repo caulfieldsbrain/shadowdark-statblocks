@@ -1,32 +1,34 @@
-import { ShadowdarkMonster } from "../types";
+import { ShadowdarkPlayer } from "../types";
 import { asString, normalizeAttacks, normalizeModifier, normalizeStringArray } from "./normalize";
 
-type LooseMonster = Record<string, unknown> & {
+type LoosePlayer = Record<string, unknown> & {
   name?: unknown;
+  ancestry?: unknown;
+  class?: unknown;
   level?: unknown;
+  xp?: unknown;
+  title?: unknown;
   alignment?: unknown;
-  type?: unknown;
+  background?: unknown;
+  deity?: unknown;
   ac?: unknown;
   hp?: unknown;
   mv?: unknown;
   atk?: unknown;
-  stats?: unknown;
   str?: unknown;
   dex?: unknown;
   con?: unknown;
   int?: unknown;
   wis?: unknown;
   cha?: unknown;
-  traits?: unknown;
-  specials?: unknown;
+  talents?: unknown;
   spells?: unknown;
   gear?: unknown;
-  description?: unknown;
   source?: unknown;
   tags?: unknown;
 };
 
-export function normalizeMonster(input: LooseMonster): ShadowdarkMonster {
+export function normalizePlayer(input: LoosePlayer): ShadowdarkPlayer {
   const nestedStats = (input.stats as Record<string, unknown> | undefined) ?? {};
 
   const strValue = input.str ?? nestedStats.str;
@@ -37,11 +39,16 @@ export function normalizeMonster(input: LooseMonster): ShadowdarkMonster {
   const chaValue = input.cha ?? nestedStats.cha;
 
   return {
-    shadowdarkType: "monster",
-    name: asString(input.name, "Unnamed Monster"),
+    shadowdarkType: "player",
+    name: asString(input.name, "Unnamed Player"),
+    ancestry: asString(input.ancestry, ""),
+    class: asString(input.class, ""),
     level: asString(input.level, "?"),
+    xp: asString(input.xp, ""),
+    title: asString(input.title, ""),
     alignment: asString(input.alignment, ""),
-    type: asString(input.type, ""),
+    background: asString(input.background, ""),
+    deity: asString(input.deity, ""),
     ac: asString(input.ac, "?"),
     hp: asString(input.hp, "?"),
     mv: asString(input.mv, ""),
@@ -54,11 +61,9 @@ export function normalizeMonster(input: LooseMonster): ShadowdarkMonster {
       wis: normalizeModifier(wisValue, "+0"),
       cha: normalizeModifier(chaValue, "+0")
     },
-    traits: normalizeStringArray(input.traits),
-    specials: normalizeStringArray(input.specials),
+    talents: normalizeStringArray(input.talents),
     spells: normalizeStringArray(input.spells),
     gear: normalizeStringArray(input.gear),
-    description: asString(input.description, ""),
     source: asString(input.source, ""),
     tags: normalizeStringArray(input.tags)
   };

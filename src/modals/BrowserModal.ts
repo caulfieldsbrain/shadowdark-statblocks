@@ -1,14 +1,14 @@
 import { App, Modal, } from "obsidian";
 import type ShadowdarkStatblocksPlugin from "../main";
 import { parseFrontmatter } from "../parsing/parseFrontmatter";
-import { renderMonsterBlock } from "../render/renderMonsterBlock";
 import { Menu } from "obsidian";
-import { type MonsterIndexEntry } from "../services/monsterIndexService";
+import { type IndexEntry } from "../services/indexService";
+import { render } from "../render/render";
 
-export class MonsterBrowserModal extends Modal {
+export class EntityBrowserModal extends Modal {
   private plugin: ShadowdarkStatblocksPlugin;
-  private allMonsters: MonsterIndexEntry[] = [];
-  private filteredMonsters: MonsterIndexEntry[] = [];
+  private all: IndexEntry[] = [];
+  private filtered: IndexEntry[] = [];
 
   private searchText = "";
   private selectedSource = "";
@@ -32,12 +32,12 @@ export class MonsterBrowserModal extends Modal {
   async onOpen(): Promise<void> {
     const { contentEl, titleEl } = this;
     this.modalEl.addClass("sd-browser-modal-shell");
-    titleEl.setText("Monster browser");
+    titleEl.setText("Entity browser");
     contentEl.empty();
     contentEl.addClass("sd-browser-modal");
 
-    this.allMonsters = await this.plugin.getAllMonsterIndexEntries();
-    this.filteredMonsters = [...this.allMonsters];
+    this.all = await this.plugin.getAllIndexEntries();
+    this.filtered = [...this.all];
 
     const filtersShell = contentEl.createDiv({
       cls: "sd-browser-filters-shell"
@@ -93,7 +93,7 @@ export class MonsterBrowserModal extends Modal {
     });
 
     const allSources = Array.from(
-      new Set(this.allMonsters.map((m) => m.source).filter(Boolean))
+      new Set(this.all.map((m) => m.source).filter(Boolean))
     ).sort((a: string, b: string) => a.localeCompare(b));
 
     sourceSelectEl.appendChild(new Option("All", ""));
@@ -113,8 +113,8 @@ export class MonsterBrowserModal extends Modal {
     });
 
     const allTagsSet = new Set<string>();
-    for (const monster of this.allMonsters) {
-      for (const tag of monster.tags) {
+    for (const entity of this.all) {
+      for (const tag of entity.tags) {
         if (tag) allTagsSet.add(tag);
       }
     }
@@ -221,12 +221,12 @@ export class MonsterBrowserModal extends Modal {
     }
   }
 
-  private showHoverCard(monster: MonsterIndexEntry): void {
-    const result = parseFrontmatter(monster.frontmatter);
+  private showHoverCard(entity: IndexEntry): void {
+    const result = parseFrontmatter(entity.frontmatter);
     if (!result.success || !result.data) return;
 
     this.hoverPreviewEl.empty();
-    renderMonsterBlock(
+    render(
       this.hoverPreviewEl,
       result.data,
       this.plugin.settings,
@@ -238,19 +238,19 @@ export class MonsterBrowserModal extends Modal {
   }
 
   private applyFilters(): void {
-    this.filteredMonsters = this.allMonsters.filter((monster) => {
+    this.filtered = this.all.filter((entity) => {
       const matchesSearch =
-        !this.searchText || monster.name.toLowerCase().includes(this.searchText);
+        !this.searchText || entity.name.toLowerCase().includes(this.searchText);
 
       const matchesSource =
-        !this.selectedSource || monster.source === this.selectedSource;
+        !this.selectedSource || entity.source === this.selectedSource;
 
       const matchesTag =
-        !this.selectedTag || monster.tags.includes(this.selectedTag);
+        !this.selectedTag || entity.tags.includes(this.selectedTag);
 
       const matchesLevel =
         !this.selectedMaxLevel ||
-        (Number(monster.level) || 0) <= Number(this.selectedMaxLevel);
+        (Number(entity.level) || 0) <= Number(this.selectedMaxLevel);
 
       return matchesSearch && matchesSource && matchesTag && matchesLevel;
     });
@@ -292,17 +292,17 @@ export class MonsterBrowserModal extends Modal {
     this.hideHoverCard();
 
     const summary = this.resultsEl.createDiv({ cls: "sd-browser-summary" });
-    summary.setText(`${this.filteredMonsters.length} monster(s)`);
+    summary.setText(`${this.filtered.length} ${this.filtered.length === 1 ? "entity" : "entities"}`);
 
-    if (this.filteredMonsters.length === 0) {
+    if (this.filtered.length === 0) {
       this.resultsEl.createDiv({
         cls: "sd-browser-empty",
-        text: "No monsters match those filters."
+        text: "No entities match those filters."
       });
       return;
     }
 
-    for (const monster of this.filteredMonsters) {
+    for (const entity of this.filtered) {
       const row = this.resultsEl.createDiv({ cls: "sd-browser-row" });
 
       row.addEventListener("mouseenter", (evt: MouseEvent) => {
@@ -316,7 +316,7 @@ export class MonsterBrowserModal extends Modal {
         }
 
         this.hoverShowTimeout = window.setTimeout(() => {
-          this.showHoverCard(monster);
+          this.showHoverCard(entity);
         }, 120);
       });
 
@@ -337,13 +337,13 @@ export class MonsterBrowserModal extends Modal {
 
       row.createDiv({
         cls: "sd-browser-name",
-        text: monster.name
+        text: entity.name
       });
 
       const metaParts = [
-        monster.level ? `LV ${monster.level}` : "",
-        monster.alignment ? `AL ${monster.alignment}` : "",
-        monster.source || ""
+        entity.level ? `LV ${entity.level}` : "",
+        entity.alignment ? `AL ${entity.alignment}` : "",
+        entity.source || ""
       ].filter(Boolean);
 
       row.createDiv({
@@ -351,9 +351,9 @@ export class MonsterBrowserModal extends Modal {
         text: metaParts.join(" • ")
       });
 
-      if (monster.tags.length > 0) {
+      if (entity.tags.length > 0) {
         const tagsEl = row.createDiv({ cls: "sd-browser-tags" });
-        for (const tag of monster.tags) {
+        for (const tag of entity.tags) {
           tagsEl.createDiv({
             cls: "sd-browser-tag",
             text: tag
@@ -362,7 +362,7 @@ export class MonsterBrowserModal extends Modal {
       }
 
       row.addEventListener("click", async () => {
-        await this.app.workspace.getLeaf(true).openFile(monster.file);
+        await this.app.workspace.getLeaf(true).openFile(entity.file);
         this.close();
       });
       row.addEventListener("contextmenu", (evt: MouseEvent) => {
@@ -374,7 +374,7 @@ export class MonsterBrowserModal extends Modal {
           item
             .setTitle("Open")
             .onClick(async () => {
-              await this.app.workspace.getLeaf(true).openFile(monster.file);
+              await this.app.workspace.getLeaf(true).openFile(entity.file);
               this.close();
             })
         );
@@ -384,7 +384,7 @@ export class MonsterBrowserModal extends Modal {
             .setTitle("Open to the right")
             .onClick(async () => {
               const leaf = this.app.workspace.getLeaf("split", "vertical");
-              await leaf.openFile(monster.file);
+              await leaf.openFile(entity.file);
             })
         );
 
@@ -392,7 +392,7 @@ export class MonsterBrowserModal extends Modal {
           item
             .setTitle("Copy link")
             .onClick(async () => {
-              const link = `[[${monster.file.basename}]]`;
+              const link = `[[${entity.file.basename}]]`;
               await navigator.clipboard.writeText(link);
             })
         );
@@ -400,7 +400,7 @@ export class MonsterBrowserModal extends Modal {
           item
             .setTitle("Copy embed")
             .onClick(async () => {
-              const embed = `![[${monster.file.basename}]]`;
+              const embed = `![[${entity.file.basename}]]`;
               await navigator.clipboard.writeText(embed);
             })
         );

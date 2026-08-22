@@ -9,26 +9,26 @@ import {
   parseYaml
 } from "obsidian";
 import {
-  getAllMonsterIndexEntries,
+  getAllIndexEntries,
   getSuggestedOtherSources,
   getSuggestedTags
-} from "./services/monsterIndexService";
+} from "./services/indexService";
 import { DEFAULT_SETTINGS, ShadowdarkStatblocksSettings } from "./settings";
 import { parseCodeBlock } from "./parsing/parseCodeBlock";
 import { parseFrontmatter } from "./parsing/parseFrontmatter";
 import { parseRawShadowdarkText } from "./parsing/parseRawShadowdarkText";
-import { renderMonsterBlock } from "./render/renderMonsterBlock";
-import { buildMonsterTemplate } from "./templates/monsterTemplate";
+import { buildMonsterBlock, buildMonsterTemplate } from "./templates/monsterTemplate";
 import { buildMonsterNoteContent } from "./utils/monsterNoteContent";
 import { ShadowdarkStatblocksSettingTab } from "./settingsTab";
 import { ImportPreviewModal } from "./modals/ImportPreviewModal";
 import { DuplicateMonsterModal } from "./modals/DuplicateMonsterModal";
-import { ShadowdarkMonster } from "./types";
+import { ShadowdarkEntity, ShadowdarkMonster } from "./types";
 import { splitRawShadowdarkBlocks } from "./utils/splitRawShadowdarkBlocks";
-import { MonsterBrowserModal } from "./modals/MonsterBrowserModal";
-import { buildPlayerBlock, buildPlayerNote } from "./templates/playerTemplate";
+import { EntityBrowserModal } from "./modals/BrowserModal";
+import { buildPlayerBlock, buildPlayerTemplate } from "./templates/playerTemplate";
+import { render } from "./render/render";
 
-type CachedMonsterFrontmatterParse = {
+type CachedFrontmatterParse = {
   mtime: number;
   result: ReturnType<typeof parseFrontmatter>;
 };
@@ -37,13 +37,13 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
   settings!: ShadowdarkStatblocksSettings;
   private renderGeneration = 0;
   private autoPreviewedLeafFiles = new WeakMap<MarkdownView, string>();
-  private parsedMonsterCache = new Map<string, CachedMonsterFrontmatterParse>();
+  private parsedCache = new Map<string, CachedFrontmatterParse>();
 
-  private renderMonsterInProcessedPreview(
+  private renderInProcessedPreview(
     el: HTMLElement,
     ctx: MarkdownPostProcessorContext
   ): void {
-    if (!this.settings.renderFrontmatterMonsters) return;
+    if (!this.settings.renderFrontmatter) return;
 
     if (!el.classList.contains("mod-frontmatter")) {
       return;
@@ -62,11 +62,12 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     const cache = this.app.metadataCache.getFileCache(file);
     const frontmatter = cache?.frontmatter as Record<string, unknown> | undefined;
 
-    if (!frontmatter || frontmatter.shadowdarkType !== "monster") {
+    const validTypes = ["monster", "player"]
+    if (!frontmatter || !validTypes.includes(frontmatter.shadowdarkType as any)) {
       return;
     }
 
-    const result = this.getCachedMonsterParse(file, frontmatter);
+    const result = this.getCachedParse(file, frontmatter);
     if (!result.success || !result.data) return;
 
     el.setAttribute("data-sd-processed-preview", "true");
@@ -78,28 +79,28 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     wrapper.className = "sd-embed-wrapper";
     wrapper.setAttribute("data-source-path", file.path);
 
-    renderMonsterBlock(
+    render(
       wrapper,
       result.data,
       this.settings,
       result.warnings,
-      this.getMonsterRenderOptions()
-    );
+      this.getRenderOptions()
+    )
     el.appendChild(wrapper);
   }
 
-  private getCachedMonsterParse(
+  private getCachedParse(
     file: TFile,
     frontmatter: Record<string, unknown>
   ): ReturnType<typeof parseFrontmatter> {
-    const cached = this.parsedMonsterCache.get(file.path);
+    const cached = this.parsedCache.get(file.path);
 
     if (cached && cached.mtime === file.stat.mtime) {
       return cached.result;
     }
 
     const result = parseFrontmatter(frontmatter);
-    this.parsedMonsterCache.set(file.path, {
+    this.parsedCache.set(file.path, {
       mtime: file.stat.mtime,
       result
     });
@@ -107,12 +108,12 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     return result;
   }
 
-  private applyLastUsedSource(monster: ShadowdarkMonster): ShadowdarkMonster {
-    if (!this.settings.lastUsedMonsterSource?.trim()) {
-      return monster;
+  private applyLastUsedSource<T extends ShadowdarkEntity>(entity: T): T {
+    if (!this.settings.lastUsedSource?.trim()) {
+      return entity;
     }
 
-    const currentSource = monster.source?.trim() ?? "";
+    const currentSource = entity.source?.trim() ?? "";
 
     if (
       !currentSource ||
@@ -120,12 +121,12 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
       currentSource === "Core Rules"
     ) {
       return {
-        ...monster,
-        source: this.settings.lastUsedMonsterSource
+        ...entity,
+        source: this.settings.lastUsedSource
       };
     }
 
-    return monster;
+    return entity;
   }
 
   private countStatAnchors(text: string): number {
@@ -150,7 +151,7 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     this.app.workspace.trigger("dice-roller:render-dice", cleaned);
   }
 
-  private getMonsterRenderOptions() {
+  private getRenderOptions() {
     if (!this.settings.enableDiceRollerIntegration) {
       return {};
     }
@@ -166,13 +167,13 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     const trimmed = source.trim();
     if (!trimmed) return;
 
-    if (this.settings.lastUsedMonsterSource === trimmed) return;
+    if (this.settings.lastUsedSource === trimmed) return;
 
-    this.settings.lastUsedMonsterSource = trimmed;
+    this.settings.lastUsedSource = trimmed;
     await this.savePluginSettings();
   }
 
-  private async importMultipleFromClipboard(): Promise<void> {
+  private async importMultipleMonstersFromClipboard(): Promise<void> {
     let clipboardText = "";
 
     try {
@@ -294,14 +295,14 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     this.addSettingTab(new ShadowdarkStatblocksSettingTab(this.app, this));
 
     this.registerMarkdownCodeBlockProcessor(
-      "shadowdark-monster",
+      "shadowdark",
       (source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
         const result = parseCodeBlock(source);
 
         if (!result.success || !result.data) {
           const errorBox = el.createDiv({ cls: "sd-error-box" });
           errorBox.createDiv({
-            text: "Shadowdark monster parse error",
+            text: "Shadowdark parse error",
             cls: "sd-error-title"
           });
 
@@ -315,42 +316,42 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
           return;
         }
 
-        renderMonsterBlock(
+        render(
           el,
           result.data,
           this.settings,
           result.warnings,
-          this.getMonsterRenderOptions()
+          this.getRenderOptions()
         );
       }
     );
 
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
-        void this.renderAllMonsterViews();
+        void this.renderAllViews();
       })
     );
 
     this.registerMarkdownPostProcessor((el, ctx) => {
-      this.renderMonsterInProcessedPreview(el, ctx);
+      this.renderInProcessedPreview(el, ctx);
     });
 
     this.registerEvent(
       this.app.workspace.on("file-open", () => {
-        void this.ensureMonsterViewsInPreview();
-        void this.renderAllMonsterViews();
+        void this.ensureViewsInPreview();
+        void this.renderAllViews();
       })
     );
 
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
-        void this.renderAllMonsterViews();
+        void this.renderAllViews();
       })
     );
 
     this.registerEvent(
       this.app.metadataCache.on("changed", () => {
-        void this.renderAllMonsterViews();
+        void this.renderAllViews();
       })
     );
 
@@ -358,36 +359,9 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
       id: "insert-shadowdark-monster-block",
       name: "Insert Shadowdark monster block",
       editorCallback: (editor) => {
-        const template = [
-          "```shadowdark-monster",
-          "name: Goblin Sneak",
-          "level: 1",
-          "alignment: C",
-          "ac: 13",
-          "hp: 5",
-          "mv: near",
-          "atk:",
-          "  - 1 Dagger +2 (1d4)",
-          "str: -1",
-          "dex: +2",
-          "con: +0",
-          "int: +0",
-          "wis: -1",
-          "cha: -1",
-          "traits:",
-          "  - Sneaky",
-          "  - Dark-adapted",
-          "description: A wiry goblin that stalks the edges of torchlight.",
-          "source: Homebrew",
-          "tags:",
-          "  - shadowdark",
-          "  - goblin",
-          "```"
-        ].join("\n");
-
-        editor.replaceSelection(template);
+        editor.replaceSelection(buildMonsterBlock())
       }
-    });
+    })
 
     this.addCommand({
       id: "insert-shadowdark-player-block",
@@ -441,21 +415,21 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
       id: "import-multiple-shadowdark-monsters",
       name: "Import multiple Shadowdark monsters from clipboard",
       callback: async () => {
-        await this.importMultipleFromClipboard();
+        await this.importMultipleMonstersFromClipboard();
       }
     });
 
     this.addCommand({
       id: "open-monster-browser",
-      name: "Open monster browser",
+      name: "Open browser",
       callback: () => {
-        new MonsterBrowserModal(this.app, this).open();
+        new EntityBrowserModal(this.app, this).open();
       }
     });
 
     window.setTimeout(() => {
-      void this.ensureMonsterViewsInPreview();
-      void this.renderAllMonsterViews();
+      void this.ensureViewsInPreview();
+      void this.renderAllViews();
     }, 100);
   }
 
@@ -470,7 +444,7 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
       }
     }
 
-    this.parsedMonsterCache.clear();
+    this.parsedCache.clear();
   }
 
   async loadPluginSettings(): Promise<void> {
@@ -482,17 +456,17 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
   }
 
   async refreshMonsterView(): Promise<void> {
-    await this.renderAllMonsterViews();
+    await this.renderAllViews();
   }
 
   private async createNote(type: string): Promise<void> {
-    const folderPath = normalizePath(this.settings.monsterFolder);
+    const folderPath = normalizePath(this.settings.folder);
 
     await this.ensureFolderExists(folderPath);
 
     const baseName = `New ${type}`;
     const filePath = this.getUniqueFilePath(folderPath, `${baseName}.md`);
-    const content = type === "monster" ? buildMonsterTemplate(baseName) : buildPlayerNote(baseName);
+    const content = type === "monster" ? buildMonsterTemplate(baseName) : buildPlayerTemplate(baseName);
 
     const file = await this.app.vault.create(filePath, content);
     await this.app.workspace.getLeaf(true).openFile(file);
@@ -515,7 +489,7 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
   }
 
   getSuggestedOtherSources(): Promise<string[]> {
-    return getSuggestedOtherSources(this.app, this.settings.monsterFolder);
+    return getSuggestedOtherSources(this.app, this.settings.folder);
   }
 
   private applySmartDefaultTags(monster: ShadowdarkMonster): ShadowdarkMonster {
@@ -633,18 +607,18 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
   }
 
   getSuggestedTags(): Promise<string[]> {
-    return getSuggestedTags(this.app, this.settings.monsterFolder);
+    return getSuggestedTags(this.app, this.settings.folder);
   }
 
-  getAllMonsterIndexEntries(): ReturnType<typeof getAllMonsterIndexEntries> {
-    return getAllMonsterIndexEntries(this.app, this.settings.monsterFolder);
+  getAllIndexEntries(): ReturnType<typeof getAllIndexEntries> {
+    return getAllIndexEntries(this.app, this.settings.folder);
   }
 
   private async createImportedMonsterNote(
     monster: ShadowdarkMonster,
     warnings: string[]
   ): Promise<void> {
-    const folderPath = normalizePath(this.settings.monsterFolder);
+    const folderPath = normalizePath(this.settings.folder);
     await this.ensureFolderExists(folderPath);
 
     const safeName = (monster.name || "Imported Monster").trim();
@@ -699,7 +673,7 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     monster: ShadowdarkMonster,
     warnings: string[]
   ): Promise<void> {
-    const folderPath = normalizePath(this.settings.monsterFolder);
+    const folderPath = normalizePath(this.settings.folder);
     await this.ensureFolderExists(folderPath);
 
     const safeName = monster.name || "Imported Monster";
@@ -740,8 +714,8 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
       return;
     }
 
-    const result = this.getCachedMonsterParse(file, parsedFrontmatter);
-    if (!result.success || !result.data) {
+    const result = this.getCachedParse(file, parsedFrontmatter);
+    if (!result.success || !result.data || result.data?.shadowdarkType !== "monster") {
       new Notice("Could not parse current monster note.");
       return;
     }
@@ -773,7 +747,7 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
 
     const updatedContent = buildMonsterNoteContent(monster, body);
     await this.app.vault.modify(file, updatedContent);
-    this.parsedMonsterCache.delete(file.path);
+    this.parsedCache.delete(file.path);
 
     await this.forceReloadOpenMarkdownFile(file);
     await this.refreshMonsterView();
@@ -816,7 +790,7 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     return candidate;
   }
 
-  private async renderAllMonsterViews(): Promise<void> {
+  private async renderAllViews(): Promise<void> {
     const myGeneration = ++this.renderGeneration;
 
     const leaves = this.app.workspace.getLeavesOfType("markdown");
@@ -825,18 +799,18 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
       .filter((view): view is MarkdownView => view instanceof MarkdownView);
 
     for (const view of views) {
-      await this.renderMonsterView(view, myGeneration);
+      await this.renderView(view, myGeneration);
     }
   }
 
-  private async renderMonsterView(
+  private async renderView(
     view: MarkdownView,
     generation: number
   ): Promise<void> {
     this.removeExistingFrontmatterRender(view);
     this.showProperties(view);
 
-    if (!this.settings.renderFrontmatterMonsters) return;
+    if (!this.settings.renderFrontmatter) return;
     if (view.getMode() !== "preview") return;
 
     const file = view.file;
@@ -848,21 +822,23 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
 
     const parsedFrontmatter = this.extractFrontmatter(content);
     if (!parsedFrontmatter) return;
-    if (parsedFrontmatter.shadowdarkType !== "monster") return;
+    const validTypes = ["monster", "player"]
+    if (!validTypes.includes(parsedFrontmatter.shadowdarkType as any)) return;
 
-    if (this.settings.hideMonsterProperties) {
+    if (this.settings.hideProperties) {
       this.hideProperties(view);
     }
   }
 
-  private async ensureMonsterViewInPreview(view: MarkdownView): Promise<void> {
+  private async ensureViewInPreview(view: MarkdownView): Promise<void> {
     const file = view.file;
     if (!(file instanceof TFile)) return;
 
     const content = await this.app.vault.read(file);
     const parsedFrontmatter = this.extractFrontmatter(content);
 
-    if (!parsedFrontmatter || parsedFrontmatter.shadowdarkType !== "monster") {
+    const validTypes = ["monster", "player"]
+    if (!parsedFrontmatter || !validTypes.includes(parsedFrontmatter.shadowdarkType as any)) {
       return;
     }
 
@@ -902,14 +878,14 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     }, 50);
   }
 
-  private async ensureMonsterViewsInPreview(): Promise<void> {
+  private async ensureViewsInPreview(): Promise<void> {
     const leaves = this.app.workspace.getLeavesOfType("markdown");
     const views = leaves
       .map((leaf) => leaf.view)
       .filter((view): view is MarkdownView => view instanceof MarkdownView);
 
     for (const view of views) {
-      await this.ensureMonsterViewInPreview(view);
+      await this.ensureViewInPreview(view);
     }
   }
 
