@@ -17,6 +17,28 @@ export interface ShadowdarkMonster {
   tags: string[];
 }
 
+export interface ShadowdarkPlayer {
+  name: string;
+  ancestry: string;
+  class: string;
+  level: string;
+  xp: string;
+  title: string;
+  alignment: string;
+  background: string;
+  deity: string;
+  ac: string;
+  hp: string;
+  mv: string;
+  atk: ShadowdarkAttack[];
+  stats: ShadowdarkAbilities;
+  talents: string[];
+  spells: string[];
+  gear: string[];
+  source: string;
+  tags: string[];
+}
+
 export interface ShadowdarkAttack {
   name: string;
   bonus?: string;

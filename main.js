@@ -2322,6 +2322,78 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   }
 };
 
+// src/templates/playerTemplate.ts
+function buildPlayerNote(name = "New Player") {
+  return `---
+shadowdarkType: player
+name: ${name}
+ancestry: Human
+class: Thief
+level: 1
+xp: 0
+title: Thug
+alignment: N
+background: Scout
+deity: Ramlaat
+ac: 10
+hp: 1
+mv: near
+atk:
+  - Shortsword +0 (1d6)
+str: +0
+dex: +0
+con: +0
+int: +0
+wis: +0
+cha: +0
+talents: []
+spells: []
+gear: []
+source:
+tags:
+  - shadowdark
+---
+
+## Notes
+
+## Gear
+
+## Funds
+`;
+}
+function buildPlayerBlock(name = "New Player") {
+  return `
+\`\`\`shadowdark-player
+name: ${name}
+ancestry: Human
+class: Thief
+level: 1
+xp: 0
+title: Thug
+alignment: N
+background: Scout
+deity: Ramlaat
+ac: 10
+hp: 1
+mv: near
+atk:
+  - Shortsword +0 (1d6)
+str: +0
+dex: +0
+con: +0
+int: +0
+wis: +0
+cha: +0
+talents: []
+spells: []
+gear: []
+source:
+tags:
+  - shadowdark
+\`\`\`
+`;
+}
+
 // src/main.ts
 var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
   constructor() {
@@ -2605,10 +2677,24 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
       }
     });
     this.addCommand({
+      id: "insert-shadowdark-player-block",
+      name: "Insert Shadowdark player block",
+      editorCallback: (editor) => {
+        editor.replaceSelection(buildPlayerBlock());
+      }
+    });
+    this.addCommand({
       id: "create-shadowdark-monster-note",
       name: "Create Shadowdark monster note",
       callback: async () => {
-        await this.createMonsterNote();
+        await this.createNote("monster");
+      }
+    });
+    this.addCommand({
+      id: "create-shadowdark-player-note",
+      name: "Create Shadowdark player note",
+      callback: async () => {
+        await this.createNote("player");
       }
     });
     this.addCommand({
@@ -2671,15 +2757,15 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
   async refreshMonsterView() {
     await this.renderAllMonsterViews();
   }
-  async createMonsterNote() {
+  async createNote(type) {
     const folderPath = (0, import_obsidian8.normalizePath)(this.settings.monsterFolder);
     await this.ensureFolderExists(folderPath);
-    const baseName = "New Monster";
+    const baseName = `New ${type}`;
     const filePath = this.getUniqueFilePath(folderPath, `${baseName}.md`);
-    const content = buildMonsterTemplate(baseName);
+    const content = type === "monster" ? buildMonsterTemplate(baseName) : buildPlayerNote(baseName);
     const file = await this.app.vault.create(filePath, content);
     await this.app.workspace.getLeaf(true).openFile(file);
-    new import_obsidian8.Notice(`Created monster note: ${file.basename}`);
+    new import_obsidian8.Notice(`Created ${type} note: ${file.basename}`);
   }
   async importMonsterFromClipboard() {
     let clipboardText = "";

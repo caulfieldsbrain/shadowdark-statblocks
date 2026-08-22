@@ -26,6 +26,7 @@ import { DuplicateMonsterModal } from "./modals/DuplicateMonsterModal";
 import { ShadowdarkMonster } from "./types";
 import { splitRawShadowdarkBlocks } from "./utils/splitRawShadowdarkBlocks";
 import { MonsterBrowserModal } from "./modals/MonsterBrowserModal";
+import { buildPlayerBlock, buildPlayerNote } from "./templates/playerTemplate";
 
 type CachedMonsterFrontmatterParse = {
   mtime: number;
@@ -389,10 +390,26 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "insert-shadowdark-player-block",
+      name: "Insert Shadowdark player block",
+      editorCallback: (editor) => {
+        editor.replaceSelection(buildPlayerBlock())
+      }
+    })
+
+    this.addCommand({
       id: "create-shadowdark-monster-note",
       name: "Create Shadowdark monster note",
       callback: async () => {
-        await this.createMonsterNote();
+        await this.createNote("monster");
+      }
+    });
+
+    this.addCommand({
+      id: "create-shadowdark-player-note",
+      name: "Create Shadowdark player note",
+      callback: async () => {
+        await this.createNote("player");
       }
     });
 
@@ -468,19 +485,19 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     await this.renderAllMonsterViews();
   }
 
-  private async createMonsterNote(): Promise<void> {
+  private async createNote(type: string): Promise<void> {
     const folderPath = normalizePath(this.settings.monsterFolder);
 
     await this.ensureFolderExists(folderPath);
 
-    const baseName = "New Monster";
+    const baseName = `New ${type}`;
     const filePath = this.getUniqueFilePath(folderPath, `${baseName}.md`);
-    const content = buildMonsterTemplate(baseName);
+    const content = type === "monster" ? buildMonsterTemplate(baseName) : buildPlayerNote(baseName);
 
     const file = await this.app.vault.create(filePath, content);
     await this.app.workspace.getLeaf(true).openFile(file);
 
-    new Notice(`Created monster note: ${file.basename}`);
+    new Notice(`Created ${type} note: ${file.basename}`);
   }
 
   private async importMonsterFromClipboard(): Promise<void> {
