@@ -1,4 +1,4 @@
-import { App, Modal,} from "obsidian";
+import { App, Modal, } from "obsidian";
 import type ShadowdarkStatblocksPlugin from "../main";
 import { parseFrontmatter } from "../parsing/parseFrontmatter";
 import { renderMonsterBlock } from "../render/renderMonsterBlock";
@@ -6,23 +6,23 @@ import { Menu } from "obsidian";
 import { type MonsterIndexEntry } from "../services/monsterIndexService";
 
 export class MonsterBrowserModal extends Modal {
-    private plugin: ShadowdarkStatblocksPlugin;
-    private allMonsters: MonsterIndexEntry[] = [];
-    private filteredMonsters: MonsterIndexEntry[] = [];
+  private plugin: ShadowdarkStatblocksPlugin;
+  private allMonsters: MonsterIndexEntry[] = [];
+  private filteredMonsters: MonsterIndexEntry[] = [];
 
-    private searchText = "";
-    private selectedSource = "";
-    private selectedTag = "";
-    private selectedMaxLevel = "";
+  private searchText = "";
+  private selectedSource = "";
+  private selectedTag = "";
+  private selectedMaxLevel = "";
 
-    private resultsEl!: HTMLDivElement;
+  private resultsEl!: HTMLDivElement;
 
-    private hoverCardEl!: HTMLDivElement;
-    private hoverPreviewEl!: HTMLDivElement;
-    private hoverHideTimeout: number | null = null;
-    private hoverMouseX = 0;
-    private hoverMouseY = 0;       
-    private hoverShowTimeout: number | null = null;                                         
+  private hoverCardEl!: HTMLDivElement;
+  private hoverPreviewEl!: HTMLDivElement;
+  private hoverHideTimeout: number | null = null;
+  private hoverMouseX = 0;
+  private hoverMouseY = 0;
+  private hoverShowTimeout: number | null = null;
 
   constructor(app: App, plugin: ShadowdarkStatblocksPlugin) {
     super(app);
@@ -31,27 +31,27 @@ export class MonsterBrowserModal extends Modal {
 
   async onOpen(): Promise<void> {
     const { contentEl, titleEl } = this;
-    this.modalEl.addClass("sd-monster-browser-modal-shell");
+    this.modalEl.addClass("sd-browser-modal-shell");
     titleEl.setText("Monster browser");
     contentEl.empty();
-    contentEl.addClass("sd-monster-browser-modal");
-    
+    contentEl.addClass("sd-browser-modal");
+
     this.allMonsters = await this.plugin.getAllMonsterIndexEntries();
     this.filteredMonsters = [...this.allMonsters];
 
     const filtersShell = contentEl.createDiv({
-      cls: "sd-monster-browser-filters-shell"
+      cls: "sd-browser-filters-shell"
     });
 
     const filtersToggle = filtersShell.createEl("button", {
-      cls: "sd-monster-browser-filters-toggle",
+      cls: "sd-browser-filters-toggle",
       text: "Filters"
     });
     filtersToggle.type = "button";
     filtersToggle.setAttribute("aria-expanded", "false");
 
     const controlsEl = filtersShell.createDiv({
-      cls: "sd-monster-browser-controls is-collapsed-mobile"
+      cls: "sd-browser-controls is-collapsed-mobile"
     });
 
     filtersToggle.addEventListener("click", () => {
@@ -65,9 +65,9 @@ export class MonsterBrowserModal extends Modal {
     });
 
     const createFilterCard = (labelText: string): HTMLDivElement => {
-      const card = controlsEl.createDiv({ cls: "sd-monster-browser-filter" });
+      const card = controlsEl.createDiv({ cls: "sd-browser-filter" });
       card.createEl("label", {
-        cls: "sd-monster-browser-filter-label",
+        cls: "sd-browser-filter-label",
         text: labelText
       });
       return card;
@@ -78,7 +78,7 @@ export class MonsterBrowserModal extends Modal {
     const searchInputEl = searchCard.createEl("input", {
       type: "text",
       placeholder: "Search by name...",
-      cls: "sd-monster-browser-input"
+      cls: "sd-browser-input"
     });
     searchInputEl.value = this.searchText;
     searchInputEl.addEventListener("input", () => {
@@ -89,7 +89,7 @@ export class MonsterBrowserModal extends Modal {
     // Source
     const sourceCard = createFilterCard("Source");
     const sourceSelectEl = sourceCard.createEl("select", {
-      cls: "sd-monster-browser-select"
+      cls: "sd-browser-select"
     });
 
     const allSources = Array.from(
@@ -109,7 +109,7 @@ export class MonsterBrowserModal extends Modal {
     // Tag
     const tagCard = createFilterCard("Tag");
     const tagSelectEl = tagCard.createEl("select", {
-      cls: "sd-monster-browser-select"
+      cls: "sd-browser-select"
     });
 
     const allTagsSet = new Set<string>();
@@ -135,7 +135,7 @@ export class MonsterBrowserModal extends Modal {
     // Max Level
     const maxLevelCard = createFilterCard("Max Level");
     const maxLevelSelectEl = maxLevelCard.createEl("select", {
-      cls: "sd-monster-browser-select"
+      cls: "sd-browser-select"
     });
 
     maxLevelSelectEl.appendChild(new Option("Any", ""));
@@ -149,11 +149,11 @@ export class MonsterBrowserModal extends Modal {
     });
 
     // Actions
-    const actionsEl = filtersShell.createDiv({ cls: "sd-monster-browser-actions" });
+    const actionsEl = filtersShell.createDiv({ cls: "sd-browser-actions" });
     actionsEl.addClass("is-collapsed-mobile");
-    
+
     const clearButton = actionsEl.createEl("button", {
-      cls: "mod-cta sd-monster-browser-clear-button",
+      cls: "mod-cta sd-browser-clear-button",
       text: "Clear filters"
     });
 
@@ -172,16 +172,16 @@ export class MonsterBrowserModal extends Modal {
     });
 
     // Results container
-    this.resultsEl = contentEl.createDiv({ cls: "sd-monster-browser-results" });
+    this.resultsEl = contentEl.createDiv({ cls: "sd-browser-results" });
 
     this.resultsEl.addEventListener("scroll", () => {
-        this.hideHoverCard();
+      this.hideHoverCard();
     });
 
     // Hover card
-    this.hoverCardEl = contentEl.createDiv({ cls: "sd-monster-browser-hover-card" });
+    this.hoverCardEl = contentEl.createDiv({ cls: "sd-browser-hover-card" });
     this.hoverPreviewEl = this.hoverCardEl.createDiv({
-      cls: "sd-monster-browser-hover-card-inner"
+      cls: "sd-browser-hover-card-inner"
     });
 
     this.hoverCardEl.addEventListener("mouseenter", () => {
@@ -197,7 +197,7 @@ export class MonsterBrowserModal extends Modal {
 
   onClose(): void {
     this.clearHoverHideTimeout();
-    this.modalEl.removeClass("sd-monster-browser-modal-shell");
+    this.modalEl.removeClass("sd-browser-modal-shell");
     this.contentEl.empty();
   }
 
@@ -227,15 +227,15 @@ export class MonsterBrowserModal extends Modal {
 
     this.hoverPreviewEl.empty();
     renderMonsterBlock(
-        this.hoverPreviewEl,
-        result.data,
-        this.plugin.settings,
-        result.warnings
+      this.hoverPreviewEl,
+      result.data,
+      this.plugin.settings,
+      result.warnings
     );
 
     this.hoverCardEl.classList.add("is-visible");
     this.positionHoverCard();
-    }
+  }
 
   private applyFilters(): void {
     this.filteredMonsters = this.allMonsters.filter((monster) => {
@@ -257,86 +257,86 @@ export class MonsterBrowserModal extends Modal {
 
     this.renderResults();
   }
-    private positionHoverCard(): void {
-        if (!this.hoverCardEl.classList.contains("is-visible")) return;
+  private positionHoverCard(): void {
+    if (!this.hoverCardEl.classList.contains("is-visible")) return;
 
-        const offset = 16;
-        const cardWidth = Math.min(420, Math.floor(window.innerWidth * 0.42));
-        const cardHeight = Math.min(520, Math.floor(window.innerHeight * 0.7));
+    const offset = 16;
+    const cardWidth = Math.min(420, Math.floor(window.innerWidth * 0.42));
+    const cardHeight = Math.min(520, Math.floor(window.innerHeight * 0.7));
 
-        let left = this.hoverMouseX + offset;
-        let top = this.hoverMouseY + offset;
+    let left = this.hoverMouseX + offset;
+    let top = this.hoverMouseY + offset;
 
-        if (left + cardWidth > window.innerWidth - 12) {
-            left = this.hoverMouseX - cardWidth - offset;
-        }
+    if (left + cardWidth > window.innerWidth - 12) {
+      left = this.hoverMouseX - cardWidth - offset;
+    }
 
-        if (left < 12) {
-            left = 12;
-        }
+    if (left < 12) {
+      left = 12;
+    }
 
-        if (top + cardHeight > window.innerHeight - 12) {
-            top = window.innerHeight - cardHeight - 12;
-        }
+    if (top + cardHeight > window.innerHeight - 12) {
+      top = window.innerHeight - cardHeight - 12;
+    }
 
-        if (top < 12) {
-            top = 12;
-        }
+    if (top < 12) {
+      top = 12;
+    }
 
-        this.hoverCardEl.style.left = `${left}px`;
-        this.hoverCardEl.style.top = `${top}px`;
-        }
+    this.hoverCardEl.style.left = `${left}px`;
+    this.hoverCardEl.style.top = `${top}px`;
+  }
 
   private renderResults(): void {
     this.resultsEl.empty();
     this.hideHoverCard();
 
-    const summary = this.resultsEl.createDiv({ cls: "sd-monster-browser-summary" });
+    const summary = this.resultsEl.createDiv({ cls: "sd-browser-summary" });
     summary.setText(`${this.filteredMonsters.length} monster(s)`);
 
     if (this.filteredMonsters.length === 0) {
       this.resultsEl.createDiv({
-        cls: "sd-monster-browser-empty",
+        cls: "sd-browser-empty",
         text: "No monsters match those filters."
       });
       return;
     }
 
     for (const monster of this.filteredMonsters) {
-      const row = this.resultsEl.createDiv({ cls: "sd-monster-browser-row" });
+      const row = this.resultsEl.createDiv({ cls: "sd-browser-row" });
 
-    row.addEventListener("mouseenter", (evt: MouseEvent) => {
+      row.addEventListener("mouseenter", (evt: MouseEvent) => {
         this.clearHoverHideTimeout();
 
         this.hoverMouseX = evt.clientX;
         this.hoverMouseY = evt.clientY;
 
         if (this.hoverShowTimeout) {
-            window.clearTimeout(this.hoverShowTimeout);
+          window.clearTimeout(this.hoverShowTimeout);
         }
 
         this.hoverShowTimeout = window.setTimeout(() => {
-            this.showHoverCard(monster);
+          this.showHoverCard(monster);
         }, 120);
-        });
+      });
 
-        row.addEventListener("mousemove", (evt: MouseEvent) => {
+      row.addEventListener("mousemove", (evt: MouseEvent) => {
         this.hoverMouseX = evt.clientX;
         this.hoverMouseY = evt.clientY;
         this.positionHoverCard();
-     });
+      });
 
-        row.addEventListener("mouseleave", () => {
-            if (this.hoverShowTimeout) {
-                window.clearTimeout(this.hoverShowTimeout);
-                this.hoverShowTimeout = null;
-            }
+      row.addEventListener("mouseleave", () => {
+        if (this.hoverShowTimeout) {
+          window.clearTimeout(this.hoverShowTimeout);
+          this.hoverShowTimeout = null;
+        }
 
-            this.scheduleHideHoverCard();
-        });
+        this.scheduleHideHoverCard();
+      });
 
       row.createDiv({
-        cls: "sd-monster-browser-name",
+        cls: "sd-browser-name",
         text: monster.name
       });
 
@@ -347,15 +347,15 @@ export class MonsterBrowserModal extends Modal {
       ].filter(Boolean);
 
       row.createDiv({
-        cls: "sd-monster-browser-meta",
+        cls: "sd-browser-meta",
         text: metaParts.join(" • ")
       });
 
       if (monster.tags.length > 0) {
-        const tagsEl = row.createDiv({ cls: "sd-monster-browser-tags" });
+        const tagsEl = row.createDiv({ cls: "sd-browser-tags" });
         for (const tag of monster.tags) {
           tagsEl.createDiv({
-            cls: "sd-monster-browser-tag",
+            cls: "sd-browser-tag",
             text: tag
           });
         }
@@ -364,48 +364,48 @@ export class MonsterBrowserModal extends Modal {
       row.addEventListener("click", async () => {
         await this.app.workspace.getLeaf(true).openFile(monster.file);
         this.close();
-    });
-    row.addEventListener("contextmenu", (evt: MouseEvent) => {
+      });
+      row.addEventListener("contextmenu", (evt: MouseEvent) => {
         evt.preventDefault();
 
         const menu = new Menu();
 
         menu.addItem((item) =>
-            item
+          item
             .setTitle("Open")
             .onClick(async () => {
-                await this.app.workspace.getLeaf(true).openFile(monster.file);
-                this.close();
+              await this.app.workspace.getLeaf(true).openFile(monster.file);
+              this.close();
             })
         );
 
         menu.addItem((item) =>
-            item
+          item
             .setTitle("Open to the right")
             .onClick(async () => {
-                const leaf = this.app.workspace.getLeaf("split", "vertical");
-                await leaf.openFile(monster.file);
+              const leaf = this.app.workspace.getLeaf("split", "vertical");
+              await leaf.openFile(monster.file);
             })
         );
 
         menu.addItem((item) =>
-            item
+          item
             .setTitle("Copy link")
             .onClick(async () => {
-                const link = `[[${monster.file.basename}]]`;
-                await navigator.clipboard.writeText(link);
+              const link = `[[${monster.file.basename}]]`;
+              await navigator.clipboard.writeText(link);
             })
         );
         menu.addItem((item) =>
-            item
+          item
             .setTitle("Copy embed")
             .onClick(async () => {
-                const embed = `![[${monster.file.basename}]]`;
-                await navigator.clipboard.writeText(embed);
+              const embed = `![[${monster.file.basename}]]`;
+              await navigator.clipboard.writeText(embed);
             })
         );
         menu.showAtMouseEvent(evt);
-        });
+      });
     }
   }
 }

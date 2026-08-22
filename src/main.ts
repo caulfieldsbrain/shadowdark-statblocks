@@ -71,10 +71,10 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     el.setAttribute("data-sd-processed-preview", "true");
     el.innerHTML = "";
     el.classList.remove("mod-frontmatter", "mod-ui", "el-pre");
-    el.classList.add("sd-monster-embed-host");
+    el.classList.add("sd-embed-host");
 
     const wrapper = document.createElement("div");
-    wrapper.className = "sd-monster-embed-wrapper";
+    wrapper.className = "sd-embed-wrapper";
     wrapper.setAttribute("data-source-path", file.path);
 
     renderMonsterBlock(
@@ -298,16 +298,16 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
         const result = parseCodeBlock(source);
 
         if (!result.success || !result.data) {
-          const errorBox = el.createDiv({ cls: "sd-monster-error-box" });
+          const errorBox = el.createDiv({ cls: "sd-error-box" });
           errorBox.createDiv({
             text: "Shadowdark monster parse error",
-            cls: "sd-monster-error-title"
+            cls: "sd-error-title"
           });
 
           for (const error of result.errors) {
             errorBox.createDiv({
               text: error,
-              cls: "sd-monster-error"
+              cls: "sd-error"
             });
           }
 
@@ -654,17 +654,17 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
         canOverwrite,
         onOverwrite: canOverwrite
           ? async () => {
-              await this.updateExistingMonsterNote(existingMonsterFile, monster);
+            await this.updateExistingMonsterNote(existingMonsterFile, monster);
 
-              if (warnings.length > 0) {
-                new Notice(
-                  `Updated ${existingMonsterFile.basename} with ${warnings.length} warning(s). Review the note.`,
-                  7000
-                );
-              } else {
-                new Notice(`Updated monster: ${existingMonsterFile.basename}`);
-              }
+            if (warnings.length > 0) {
+              new Notice(
+                `Updated ${existingMonsterFile.basename} with ${warnings.length} warning(s). Review the note.`,
+                7000
+              );
+            } else {
+              new Notice(`Updated monster: ${existingMonsterFile.basename}`);
             }
+          }
           : undefined,
         onCreateCopy: async () => {
           await this.createImportedMonsterCopy(monster, warnings);
@@ -926,19 +926,19 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
   private hideProperties(view: MarkdownView): void {
     const propertiesEl = view.containerEl.querySelector(".metadata-container");
     if (propertiesEl instanceof HTMLElement) {
-      propertiesEl.classList.add("sd-monster-hide-properties");
+      propertiesEl.classList.add("sd-hide-properties");
     }
   }
 
   private showProperties(view: MarkdownView): void {
-    const hiddenProperties = view.containerEl.querySelectorAll(".sd-monster-hide-properties");
+    const hiddenProperties = view.containerEl.querySelectorAll(".sd-hide-properties");
     hiddenProperties.forEach((el) => {
-      el.classList.remove("sd-monster-hide-properties");
+      el.classList.remove("sd-hide-properties");
     });
   }
 
   private removeExistingFrontmatterRender(view: MarkdownView): void {
-    const existing = view.containerEl.querySelectorAll(".sd-monster-frontmatter-wrapper");
+    const existing = view.containerEl.querySelectorAll(".sd-frontmatter-wrapper");
     existing.forEach((el) => {
       el.remove();
     });

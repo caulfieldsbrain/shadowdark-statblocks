@@ -644,7 +644,7 @@ function attackBonusToFormula(bonus) {
 function createDiceRollButton(text, formula, onRollDice) {
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "sd-monster-dice-button";
+  button.className = "sd-dice-button";
   button.textContent = text;
   button.title = `Roll ${formula}`;
   button.addEventListener("click", (evt) => {
@@ -719,9 +719,9 @@ function appendTextWithDamageDiceButtons(parent, text, onRollDice) {
 function appendRenderedAttack(li, attackText, settings, options) {
   const { connector, body } = splitAttackConnector(attackText);
   if (connector) {
-    li.appendChild(createSpan("sd-monster-attack-connector", `${connector} `));
+    li.appendChild(createSpan("sd-attack-connector", `${connector} `));
   }
-  const attackTextEl = createSpan("sd-monster-attack-text");
+  const attackTextEl = createSpan("sd-attack-text");
   if (settings.enableDiceRollerIntegration && options.onRollDice) {
     appendAttackBodyWithDiceButtons(attackTextEl, body, options.onRollDice);
   } else {
@@ -767,20 +767,20 @@ function splitLabelAndBody(text) {
 }
 function addSection(parent, title, items, className, settings, options) {
   if (items.length === 0) return;
-  const section = createDiv("sd-monster-section");
-  section.appendChild(createDiv("sd-monster-section-title", title));
+  const section = createDiv("sd-section");
+  section.appendChild(createDiv("sd-section-title", title));
   const list = createList(className);
   for (const item of items) {
     const li = createListItem();
     const { label, body } = splitLabelAndBody(item);
     if (label) {
-      li.appendChild(createSpan("sd-monster-ability-label", label));
+      li.appendChild(createSpan("sd-ability-label", label));
     }
     if (body) {
       if (label) {
         li.appendChild(document.createTextNode(" "));
       }
-      const bodyEl = createSpan("sd-monster-ability-text");
+      const bodyEl = createSpan("sd-ability-text");
       if (settings.enableDiceRollerIntegration && options.onRollDice) {
         appendTextWithDamageDiceButtons(bodyEl, body, options.onRollDice);
       } else {
@@ -804,13 +804,13 @@ function renderMonsterBlock(container, monster, settings, warnings = [], options
   container.innerHTML = "";
   const card = createDiv(
     [
-      "sd-monster-card",
+      "sd-card",
       settings.compactMode ? "is-compact" : ""
     ].filter(Boolean).join(" ")
   );
-  const header = createDiv("sd-monster-header");
-  header.appendChild(createDiv("sd-monster-name", monster.name));
-  const meta = createDiv("sd-monster-meta");
+  const header = createDiv("sd-header");
+  header.appendChild(createDiv("sd-name", monster.name));
+  const meta = createDiv("sd-meta");
   const metaParts = [];
   if (monster.level) {
     metaParts.push(createSpan(void 0, `Level ${monster.level}`));
@@ -831,61 +831,61 @@ function renderMonsterBlock(container, monster, settings, warnings = [], options
   });
   header.appendChild(meta);
   card.appendChild(header);
-  const core = createDiv("sd-monster-core");
-  core.appendChild(createDiv("sd-monster-core-item", `AC ${monster.ac}`));
-  core.appendChild(createDiv("sd-monster-core-item", `HP ${monster.hp}`));
+  const core = createDiv("sd-core");
+  core.appendChild(createDiv("sd-core-item", `AC ${monster.ac}`));
+  core.appendChild(createDiv("sd-core-item", `HP ${monster.hp}`));
   if (monster.mv) {
-    core.appendChild(createDiv("sd-monster-core-item", `MV ${monster.mv}`));
+    core.appendChild(createDiv("sd-core-item", `MV ${monster.mv}`));
   }
   card.appendChild(core);
   if (monster.atk.length > 0) {
-    const atkSection = createDiv("sd-monster-section");
-    atkSection.appendChild(createDiv("sd-monster-section-title", "ATTACKS"));
-    const atkList = createList("sd-monster-attacks");
+    const atkSection = createDiv("sd-section");
+    atkSection.appendChild(createDiv("sd-section-title", "ATTACKS"));
+    const atkList = createList("sd-attacks");
     for (const attack of monster.atk) {
-      const li = createListItem("sd-monster-attack");
+      const li = createListItem("sd-attack");
       appendRenderedAttack(li, renderAttackText(attack), settings, options);
       atkList.appendChild(li);
     }
     atkSection.appendChild(atkList);
     card.appendChild(atkSection);
   }
-  const abilities = createDiv("sd-monster-section");
-  abilities.appendChild(createDiv("sd-monster-section-title", "ABILITIES"));
-  const grid = createDiv("sd-monster-abilities");
-  grid.appendChild(createDiv("sd-monster-ability", `STR ${monster.stats.str}`));
-  grid.appendChild(createDiv("sd-monster-ability", `DEX ${monster.stats.dex}`));
-  grid.appendChild(createDiv("sd-monster-ability", `CON ${monster.stats.con}`));
-  grid.appendChild(createDiv("sd-monster-ability", `INT ${monster.stats.int}`));
-  grid.appendChild(createDiv("sd-monster-ability", `WIS ${monster.stats.wis}`));
-  grid.appendChild(createDiv("sd-monster-ability", `CHA ${monster.stats.cha}`));
+  const abilities = createDiv("sd-section");
+  abilities.appendChild(createDiv("sd-section-title", "ABILITIES"));
+  const grid = createDiv("sd-abilities");
+  grid.appendChild(createDiv("sd-ability", `STR ${monster.stats.str}`));
+  grid.appendChild(createDiv("sd-ability", `DEX ${monster.stats.dex}`));
+  grid.appendChild(createDiv("sd-ability", `CON ${monster.stats.con}`));
+  grid.appendChild(createDiv("sd-ability", `INT ${monster.stats.int}`));
+  grid.appendChild(createDiv("sd-ability", `WIS ${monster.stats.wis}`));
+  grid.appendChild(createDiv("sd-ability", `CHA ${monster.stats.cha}`));
   abilities.appendChild(grid);
   card.appendChild(abilities);
-  addSection(card, "TRAITS", monster.traits, "sd-monster-list", settings, options);
-  addSection(card, "SPECIALS", monster.specials, "sd-monster-list", settings, options);
-  addSection(card, "SPELLS", monster.spells, "sd-monster-list", settings, options);
-  addSection(card, "GEAR", monster.gear, "sd-monster-list", settings, options);
+  addSection(card, "TRAITS", monster.traits, "sd-list", settings, options);
+  addSection(card, "SPECIALS", monster.specials, "sd-list", settings, options);
+  addSection(card, "SPELLS", monster.spells, "sd-list", settings, options);
+  addSection(card, "GEAR", monster.gear, "sd-list", settings, options);
   if (monster.description) {
-    const desc = createDiv("sd-monster-section");
-    desc.appendChild(createDiv("sd-monster-description", monster.description));
+    const desc = createDiv("sd-section");
+    desc.appendChild(createDiv("sd-description", monster.description));
     card.appendChild(desc);
   }
   if (settings.showSource && monster.source) {
-    const source = createDiv("sd-monster-footer");
-    source.appendChild(createSpan("sd-monster-source", `Source: ${monster.source}`));
+    const source = createDiv("sd-footer");
+    source.appendChild(createSpan("sd-source", `Source: ${monster.source}`));
     card.appendChild(source);
   }
   if (settings.showTags && monster.tags.length > 0) {
-    const tags = createDiv("sd-monster-tags");
+    const tags = createDiv("sd-tags");
     for (const tag of monster.tags) {
-      tags.appendChild(createSpan("sd-monster-tag", tag));
+      tags.appendChild(createSpan("sd-tag", tag));
     }
     card.appendChild(tags);
   }
   if (warnings.length > 0) {
-    const warningBox = createDiv("sd-monster-warning-box");
+    const warningBox = createDiv("sd-warning-box");
     for (const warning of warnings) {
-      warningBox.appendChild(createDiv("sd-monster-warning", warning));
+      warningBox.appendChild(createDiv("sd-warning", warning));
     }
     card.appendChild(warningBox);
   }
@@ -2031,23 +2031,23 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   }
   async onOpen() {
     const { contentEl, titleEl } = this;
-    this.modalEl.addClass("sd-monster-browser-modal-shell");
+    this.modalEl.addClass("sd-browser-modal-shell");
     titleEl.setText("Monster browser");
     contentEl.empty();
-    contentEl.addClass("sd-monster-browser-modal");
+    contentEl.addClass("sd-browser-modal");
     this.allMonsters = await this.plugin.getAllMonsterIndexEntries();
     this.filteredMonsters = [...this.allMonsters];
     const filtersShell = contentEl.createDiv({
-      cls: "sd-monster-browser-filters-shell"
+      cls: "sd-browser-filters-shell"
     });
     const filtersToggle = filtersShell.createEl("button", {
-      cls: "sd-monster-browser-filters-toggle",
+      cls: "sd-browser-filters-toggle",
       text: "Filters"
     });
     filtersToggle.type = "button";
     filtersToggle.setAttribute("aria-expanded", "false");
     const controlsEl = filtersShell.createDiv({
-      cls: "sd-monster-browser-controls is-collapsed-mobile"
+      cls: "sd-browser-controls is-collapsed-mobile"
     });
     filtersToggle.addEventListener("click", () => {
       const isCollapsed = controlsEl.hasClass("is-collapsed-mobile");
@@ -2057,9 +2057,9 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
       filtersToggle.setAttribute("aria-expanded", String(isCollapsed));
     });
     const createFilterCard = (labelText) => {
-      const card = controlsEl.createDiv({ cls: "sd-monster-browser-filter" });
+      const card = controlsEl.createDiv({ cls: "sd-browser-filter" });
       card.createEl("label", {
-        cls: "sd-monster-browser-filter-label",
+        cls: "sd-browser-filter-label",
         text: labelText
       });
       return card;
@@ -2068,7 +2068,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     const searchInputEl = searchCard.createEl("input", {
       type: "text",
       placeholder: "Search by name...",
-      cls: "sd-monster-browser-input"
+      cls: "sd-browser-input"
     });
     searchInputEl.value = this.searchText;
     searchInputEl.addEventListener("input", () => {
@@ -2077,7 +2077,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     });
     const sourceCard = createFilterCard("Source");
     const sourceSelectEl = sourceCard.createEl("select", {
-      cls: "sd-monster-browser-select"
+      cls: "sd-browser-select"
     });
     const allSources = Array.from(
       new Set(this.allMonsters.map((m) => m.source).filter(Boolean))
@@ -2093,7 +2093,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     });
     const tagCard = createFilterCard("Tag");
     const tagSelectEl = tagCard.createEl("select", {
-      cls: "sd-monster-browser-select"
+      cls: "sd-browser-select"
     });
     const allTagsSet = /* @__PURE__ */ new Set();
     for (const monster of this.allMonsters) {
@@ -2115,7 +2115,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     });
     const maxLevelCard = createFilterCard("Max Level");
     const maxLevelSelectEl = maxLevelCard.createEl("select", {
-      cls: "sd-monster-browser-select"
+      cls: "sd-browser-select"
     });
     maxLevelSelectEl.appendChild(new Option("Any", ""));
     for (let i = 0; i <= 20; i++) {
@@ -2126,10 +2126,10 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
       this.selectedMaxLevel = maxLevelSelectEl.value;
       this.applyFilters();
     });
-    const actionsEl = filtersShell.createDiv({ cls: "sd-monster-browser-actions" });
+    const actionsEl = filtersShell.createDiv({ cls: "sd-browser-actions" });
     actionsEl.addClass("is-collapsed-mobile");
     const clearButton = actionsEl.createEl("button", {
-      cls: "mod-cta sd-monster-browser-clear-button",
+      cls: "mod-cta sd-browser-clear-button",
       text: "Clear filters"
     });
     clearButton.addEventListener("click", () => {
@@ -2143,13 +2143,13 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
       maxLevelSelectEl.value = "";
       this.applyFilters();
     });
-    this.resultsEl = contentEl.createDiv({ cls: "sd-monster-browser-results" });
+    this.resultsEl = contentEl.createDiv({ cls: "sd-browser-results" });
     this.resultsEl.addEventListener("scroll", () => {
       this.hideHoverCard();
     });
-    this.hoverCardEl = contentEl.createDiv({ cls: "sd-monster-browser-hover-card" });
+    this.hoverCardEl = contentEl.createDiv({ cls: "sd-browser-hover-card" });
     this.hoverPreviewEl = this.hoverCardEl.createDiv({
-      cls: "sd-monster-browser-hover-card-inner"
+      cls: "sd-browser-hover-card-inner"
     });
     this.hoverCardEl.addEventListener("mouseenter", () => {
       this.clearHoverHideTimeout();
@@ -2161,7 +2161,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   }
   onClose() {
     this.clearHoverHideTimeout();
-    this.modalEl.removeClass("sd-monster-browser-modal-shell");
+    this.modalEl.removeClass("sd-browser-modal-shell");
     this.contentEl.empty();
   }
   clearHoverHideTimeout() {
@@ -2229,17 +2229,17 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   renderResults() {
     this.resultsEl.empty();
     this.hideHoverCard();
-    const summary = this.resultsEl.createDiv({ cls: "sd-monster-browser-summary" });
+    const summary = this.resultsEl.createDiv({ cls: "sd-browser-summary" });
     summary.setText(`${this.filteredMonsters.length} monster(s)`);
     if (this.filteredMonsters.length === 0) {
       this.resultsEl.createDiv({
-        cls: "sd-monster-browser-empty",
+        cls: "sd-browser-empty",
         text: "No monsters match those filters."
       });
       return;
     }
     for (const monster of this.filteredMonsters) {
-      const row = this.resultsEl.createDiv({ cls: "sd-monster-browser-row" });
+      const row = this.resultsEl.createDiv({ cls: "sd-browser-row" });
       row.addEventListener("mouseenter", (evt) => {
         this.clearHoverHideTimeout();
         this.hoverMouseX = evt.clientX;
@@ -2264,7 +2264,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
         this.scheduleHideHoverCard();
       });
       row.createDiv({
-        cls: "sd-monster-browser-name",
+        cls: "sd-browser-name",
         text: monster.name
       });
       const metaParts = [
@@ -2273,14 +2273,14 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
         monster.source || ""
       ].filter(Boolean);
       row.createDiv({
-        cls: "sd-monster-browser-meta",
+        cls: "sd-browser-meta",
         text: metaParts.join(" \u2022 ")
       });
       if (monster.tags.length > 0) {
-        const tagsEl = row.createDiv({ cls: "sd-monster-browser-tags" });
+        const tagsEl = row.createDiv({ cls: "sd-browser-tags" });
         for (const tag of monster.tags) {
           tagsEl.createDiv({
-            cls: "sd-monster-browser-tag",
+            cls: "sd-browser-tag",
             text: tag
           });
         }
@@ -2352,9 +2352,9 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     el.setAttribute("data-sd-processed-preview", "true");
     el.innerHTML = "";
     el.classList.remove("mod-frontmatter", "mod-ui", "el-pre");
-    el.classList.add("sd-monster-embed-host");
+    el.classList.add("sd-embed-host");
     const wrapper = document.createElement("div");
-    wrapper.className = "sd-monster-embed-wrapper";
+    wrapper.className = "sd-embed-wrapper";
     wrapper.setAttribute("data-source-path", file.path);
     renderMonsterBlock(
       wrapper,
@@ -2525,15 +2525,15 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
       (source, el, _ctx) => {
         const result = parseCodeBlock(source);
         if (!result.success || !result.data) {
-          const errorBox = el.createDiv({ cls: "sd-monster-error-box" });
+          const errorBox = el.createDiv({ cls: "sd-error-box" });
           errorBox.createDiv({
             text: "Shadowdark monster parse error",
-            cls: "sd-monster-error-title"
+            cls: "sd-error-title"
           });
           for (const error of result.errors) {
             errorBox.createDiv({
               text: error,
-              cls: "sd-monster-error"
+              cls: "sd-error"
             });
           }
           return;
@@ -3012,17 +3012,17 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
   hideProperties(view) {
     const propertiesEl = view.containerEl.querySelector(".metadata-container");
     if (propertiesEl instanceof HTMLElement) {
-      propertiesEl.classList.add("sd-monster-hide-properties");
+      propertiesEl.classList.add("sd-hide-properties");
     }
   }
   showProperties(view) {
-    const hiddenProperties = view.containerEl.querySelectorAll(".sd-monster-hide-properties");
+    const hiddenProperties = view.containerEl.querySelectorAll(".sd-hide-properties");
     hiddenProperties.forEach((el) => {
-      el.classList.remove("sd-monster-hide-properties");
+      el.classList.remove("sd-hide-properties");
     });
   }
   removeExistingFrontmatterRender(view) {
-    const existing = view.containerEl.querySelectorAll(".sd-monster-frontmatter-wrapper");
+    const existing = view.containerEl.querySelectorAll(".sd-frontmatter-wrapper");
     existing.forEach((el) => {
       el.remove();
     });
