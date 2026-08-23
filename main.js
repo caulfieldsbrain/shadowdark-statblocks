@@ -24,7 +24,7 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 var import_obsidian8 = require("obsidian");
 
-// src/services/monsterIndexService.ts
+// src/services/indexService.ts
 var import_obsidian = require("obsidian");
 function extractFrontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
@@ -38,8 +38,8 @@ function extractFrontmatter(content) {
     return null;
   }
 }
-async function getSuggestedTags(app, monsterFolder) {
-  const folderPath = (0, import_obsidian.normalizePath)(monsterFolder);
+async function getSuggestedTags(app, folder) {
+  const folderPath = (0, import_obsidian.normalizePath)(folder);
   const files = app.vault.getMarkdownFiles().filter(
     (file) => file.path.startsWith(`${folderPath}/`) || file.path === `${folderPath}.md`
   );
@@ -47,7 +47,8 @@ async function getSuggestedTags(app, monsterFolder) {
   for (const file of files) {
     const content = await app.vault.read(file);
     const frontmatter = extractFrontmatter(content);
-    if (!frontmatter || frontmatter.shadowdarkType !== "monster") continue;
+    const validTypes = ["monster", "player"];
+    if (!frontmatter || !validTypes.includes(frontmatter.shadowdarkType)) continue;
     const rawTags = frontmatter.tags;
     if (Array.isArray(rawTags)) {
       for (const tag of rawTags) {
@@ -59,8 +60,8 @@ async function getSuggestedTags(app, monsterFolder) {
   }
   return [...tags].sort((a, b) => a.localeCompare(b));
 }
-async function getSuggestedOtherSources(app, monsterFolder) {
-  const folderPath = (0, import_obsidian.normalizePath)(monsterFolder);
+async function getSuggestedOtherSources(app, folder) {
+  const folderPath = (0, import_obsidian.normalizePath)(folder);
   const files = app.vault.getMarkdownFiles().filter(
     (file) => file.path.startsWith(`${folderPath}/`) || file.path === `${folderPath}.md`
   );
@@ -76,7 +77,8 @@ async function getSuggestedOtherSources(app, monsterFolder) {
   for (const file of files) {
     const content = await app.vault.read(file);
     const frontmatter = extractFrontmatter(content);
-    if (!frontmatter || frontmatter.shadowdarkType !== "monster") continue;
+    const validTypes = ["monster", "player"];
+    if (!frontmatter || !validTypes.includes(frontmatter.shadowdarkType)) continue;
     const rawSource = frontmatter.source;
     if (typeof rawSource === "string") {
       const source = rawSource.trim();
@@ -87,8 +89,8 @@ async function getSuggestedOtherSources(app, monsterFolder) {
   }
   return [...sources].sort((a, b) => a.localeCompare(b));
 }
-function getAllMonsterIndexEntries(app, monsterFolder) {
-  const folderPath = (0, import_obsidian.normalizePath)(monsterFolder);
+function getAllIndexEntries(app, folder) {
+  const folderPath = (0, import_obsidian.normalizePath)(folder);
   const files = app.vault.getMarkdownFiles().filter(
     (file) => file.path.startsWith(`${folderPath}/`) || file.path === `${folderPath}.md`
   );
@@ -96,7 +98,8 @@ function getAllMonsterIndexEntries(app, monsterFolder) {
   for (const file of files) {
     const cache = app.metadataCache.getFileCache(file);
     const frontmatter = cache == null ? void 0 : cache.frontmatter;
-    if (!frontmatter || frontmatter.shadowdarkType !== "monster") continue;
+    const validTypes = ["monster", "player"];
+    if (!frontmatter || !validTypes.includes(frontmatter.shadowdarkType)) continue;
     results.push({
       file,
       name: typeof frontmatter.name === "string" ? frontmatter.name : file.basename,
@@ -116,17 +119,17 @@ var DEFAULT_SETTINGS = {
   compactMode: false,
   showSource: true,
   showTags: true,
-  renderFrontmatterMonsters: true,
-  monsterFolder: "Shadowdark/Monsters",
-  hideMonsterProperties: true,
-  lastUsedMonsterSource: "",
+  renderFrontmatter: true,
+  folder: "Shadowdark",
+  hideProperties: true,
+  lastUsedSource: "",
   enableDiceRollerIntegration: false
 };
 
 // src/parsing/parseCodeBlock.ts
 var import_obsidian2 = require("obsidian");
 
-// src/parsing/normalizeMonster.ts
+// src/parsing/normalize.ts
 function asString(value, fallback = "") {
   if (value === null || value === void 0) {
     return fallback;
@@ -183,6 +186,8 @@ function normalizeAttacks(value) {
   }
   return [];
 }
+
+// src/parsing/normalizeMonster.ts
 function normalizeMonster(input) {
   var _a, _b, _c, _d, _e, _f, _g;
   const nestedStats = (_a = input.stats) != null ? _a : {};
@@ -193,6 +198,7 @@ function normalizeMonster(input) {
   const wisValue = (_f = input.wis) != null ? _f : nestedStats.wis;
   const chaValue = (_g = input.cha) != null ? _g : nestedStats.cha;
   return {
+    shadowdarkType: "monster",
     name: asString(input.name, "Unnamed Monster"),
     level: asString(input.level, "?"),
     alignment: asString(input.alignment, ""),
@@ -219,6 +225,47 @@ function normalizeMonster(input) {
   };
 }
 
+// src/parsing/normalizePlayer.ts
+function normalizePlayer(input) {
+  var _a, _b, _c, _d, _e, _f, _g;
+  const nestedStats = (_a = input.stats) != null ? _a : {};
+  const strValue = (_b = input.str) != null ? _b : nestedStats.str;
+  const dexValue = (_c = input.dex) != null ? _c : nestedStats.dex;
+  const conValue = (_d = input.con) != null ? _d : nestedStats.con;
+  const intValue = (_e = input.int) != null ? _e : nestedStats.int;
+  const wisValue = (_f = input.wis) != null ? _f : nestedStats.wis;
+  const chaValue = (_g = input.cha) != null ? _g : nestedStats.cha;
+  return {
+    shadowdarkType: "player",
+    name: asString(input.name, "Unnamed Player"),
+    ancestry: asString(input.ancestry, ""),
+    class: asString(input.class, ""),
+    level: asString(input.level, "?"),
+    xp: asString(input.xp, ""),
+    title: asString(input.title, ""),
+    alignment: asString(input.alignment, ""),
+    background: asString(input.background, ""),
+    deity: asString(input.deity, ""),
+    ac: asString(input.ac, "?"),
+    hp: asString(input.hp, "?"),
+    mv: asString(input.mv, ""),
+    atk: normalizeAttacks(input.atk),
+    stats: {
+      str: normalizeModifier(strValue, "+0"),
+      dex: normalizeModifier(dexValue, "+0"),
+      con: normalizeModifier(conValue, "+0"),
+      int: normalizeModifier(intValue, "+0"),
+      wis: normalizeModifier(wisValue, "+0"),
+      cha: normalizeModifier(chaValue, "+0")
+    },
+    talents: normalizeStringArray(input.talents),
+    spells: normalizeStringArray(input.spells),
+    gear: normalizeStringArray(input.gear),
+    source: asString(input.source, ""),
+    tags: normalizeStringArray(input.tags)
+  };
+}
+
 // src/parsing/parseCodeBlock.ts
 function parseCodeBlock(source) {
   const errors = [];
@@ -232,22 +279,27 @@ function parseCodeBlock(source) {
         warnings
       };
     }
-    const monster = normalizeMonster(parsed);
-    if (!monster.name || monster.name === "Unnamed Monster") {
+    let entity;
+    if (parsed.shadowdarkType === "monster") {
+      entity = normalizeMonster(parsed);
+    } else {
+      entity = normalizePlayer(parsed);
+    }
+    if (!entity.name || entity.name === "Unnamed Monster") {
       warnings.push("Monster is missing a name.");
     }
-    if (!monster.ac || monster.ac === "?") {
+    if (!entity.ac || entity.ac === "?") {
       warnings.push("Monster is missing AC.");
     }
-    if (!monster.hp || monster.hp === "?") {
+    if (!entity.hp || entity.hp === "?") {
       warnings.push("Monster is missing HP.");
     }
-    if (monster.atk.length === 0) {
+    if (entity.atk.length === 0) {
       warnings.push("Monster has no attacks listed.");
     }
     return {
       success: true,
-      data: monster,
+      data: entity,
       errors,
       warnings
     };
@@ -272,22 +324,27 @@ function parseFrontmatter(frontmatter) {
       warnings
     };
   }
-  const monster = normalizeMonster(frontmatter);
-  if (!monster.name || monster.name === "Unnamed Monster") {
-    warnings.push("Monster is missing a name.");
+  let entity;
+  if (frontmatter.shadowdarkType === "monster") {
+    entity = normalizeMonster(frontmatter);
+  } else {
+    entity = normalizePlayer(frontmatter);
   }
-  if (!monster.ac || monster.ac === "?") {
-    warnings.push("Monster is missing AC.");
+  if (!entity.name || entity.name.startsWith("Unnamed")) {
+    warnings.push("Missing a name.");
   }
-  if (!monster.hp || monster.hp === "?") {
-    warnings.push("Monster is missing HP.");
+  if (!entity.ac || entity.ac === "?") {
+    warnings.push("Missing AC.");
   }
-  if (monster.atk.length === 0) {
-    warnings.push("Monster has no attacks listed.");
+  if (!entity.hp || entity.hp === "?") {
+    warnings.push("Missing HP.");
+  }
+  if (entity.atk.length === 0) {
+    warnings.push("No attacks listed.");
   }
   return {
     success: true,
-    data: monster,
+    data: entity,
     errors,
     warnings
   };
@@ -578,320 +635,6 @@ function parseRawShadowdarkText(source) {
   };
 }
 
-// src/render/renderMonsterBlock.ts
-function createDiv(className, text) {
-  const el = document.createElement("div");
-  if (className) el.className = className;
-  if (text !== void 0) el.textContent = text;
-  return el;
-}
-function createSpan(className, text) {
-  const el = document.createElement("span");
-  if (className) el.className = className;
-  if (text !== void 0) el.textContent = text;
-  return el;
-}
-function createList(className) {
-  const el = document.createElement("ul");
-  if (className) el.className = className;
-  return el;
-}
-function createListItem(className) {
-  const el = document.createElement("li");
-  if (className) el.className = className;
-  return el;
-}
-function renderAttackText(attack) {
-  if (attack.raw) return attack.raw;
-  const parts = [attack.name];
-  if (attack.bonus) parts.push(attack.bonus);
-  if (attack.damage) parts.push(`(${attack.damage})`);
-  if (attack.range) parts.push(`[${attack.range}]`);
-  if (attack.notes) parts.push(`- ${attack.notes}`);
-  return parts.join(" ").trim();
-}
-function getAlignmentLabel(alignment) {
-  const normalized = alignment.trim().toUpperCase();
-  switch (normalized) {
-    case "L":
-      return "Lawful";
-    case "N":
-      return "Neutral";
-    case "C":
-      return "Chaotic";
-    default:
-      return "";
-  }
-}
-function splitAttackConnector(text) {
-  const trimmed = text.trim();
-  const match = trimmed.match(/^(AND|OR)\s+(.+)$/i);
-  if (!match) {
-    return { connector: null, body: trimmed };
-  }
-  return {
-    connector: match[1].toUpperCase(),
-    body: match[2].trim()
-  };
-}
-function normalizeDiceFormula(formula) {
-  return formula.replace(/\s+/g, "");
-}
-function attackBonusToFormula(bonus) {
-  const normalized = bonus.trim();
-  return `1d20${normalized}`;
-}
-function createDiceRollButton(text, formula, onRollDice) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "sd-monster-dice-button";
-  button.textContent = text;
-  button.title = `Roll ${formula}`;
-  button.addEventListener("click", (evt) => {
-    evt.preventDefault();
-    evt.stopPropagation();
-    onRollDice(formula);
-  });
-  return button;
-}
-function appendAttackBodyWithDiceButtons(parent, body, onRollDice) {
-  const attackBonusRegex = /([+-]\d+)/;
-  const damageRegex = /\b(\d+d\d+(?:\s*[+-]\s*\d+)?)\b/i;
-  const replacements = [];
-  const bonusMatch = attackBonusRegex.exec(body);
-  if ((bonusMatch == null ? void 0 : bonusMatch.index) !== void 0) {
-    const text = bonusMatch[1];
-    replacements.push({
-      start: bonusMatch.index,
-      end: bonusMatch.index + text.length,
-      text,
-      formula: attackBonusToFormula(text)
-    });
-  }
-  const damageMatch = damageRegex.exec(body);
-  if ((damageMatch == null ? void 0 : damageMatch.index) !== void 0) {
-    const text = damageMatch[1];
-    replacements.push({
-      start: damageMatch.index,
-      end: damageMatch.index + text.length,
-      text,
-      formula: normalizeDiceFormula(text)
-    });
-  }
-  replacements.sort((a, b) => a.start - b.start);
-  let cursor = 0;
-  for (const replacement of replacements) {
-    if (replacement.start < cursor) {
-      continue;
-    }
-    if (replacement.start > cursor) {
-      parent.appendChild(document.createTextNode(body.slice(cursor, replacement.start)));
-    }
-    parent.appendChild(
-      createDiceRollButton(replacement.text, replacement.formula, onRollDice)
-    );
-    cursor = replacement.end;
-  }
-  if (cursor < body.length) {
-    parent.appendChild(document.createTextNode(body.slice(cursor)));
-  }
-}
-function appendTextWithDamageDiceButtons(parent, text, onRollDice) {
-  const damageRegex = /\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/gi;
-  let cursor = 0;
-  let match;
-  while ((match = damageRegex.exec(text)) !== null) {
-    const diceText = match[0];
-    const start = match.index;
-    const end = start + diceText.length;
-    if (start > cursor) {
-      parent.appendChild(document.createTextNode(text.slice(cursor, start)));
-    }
-    parent.appendChild(
-      createDiceRollButton(diceText, normalizeDiceFormula(diceText), onRollDice)
-    );
-    cursor = end;
-  }
-  if (cursor < text.length) {
-    parent.appendChild(document.createTextNode(text.slice(cursor)));
-  }
-}
-function appendRenderedAttack(li, attackText, settings, options) {
-  const { connector, body } = splitAttackConnector(attackText);
-  if (connector) {
-    li.appendChild(createSpan("sd-monster-attack-connector", `${connector} `));
-  }
-  const attackTextEl = createSpan("sd-monster-attack-text");
-  if (settings.enableDiceRollerIntegration && options.onRollDice) {
-    appendAttackBodyWithDiceButtons(attackTextEl, body, options.onRollDice);
-  } else {
-    attackTextEl.textContent = body;
-  }
-  li.appendChild(attackTextEl);
-}
-function splitLabelAndBody(text) {
-  const trimmed = text.trim();
-  if (!trimmed) {
-    return { label: "", body: "" };
-  }
-  let match = null;
-  match = trimmed.match(/^(.{1,100}?\([^)]{1,40}\)\.)\s*(.+)$/);
-  if (match) {
-    return {
-      label: match[1].trim(),
-      body: match[2].trim()
-    };
-  }
-  match = trimmed.match(/^([^.!?:]{1,80}[.!?])\s*(.+)$/);
-  if (match) {
-    return {
-      label: match[1].trim(),
-      body: match[2].trim()
-    };
-  }
-  match = trimmed.match(/^([^:]{1,80}:)\s*(.+)$/);
-  if (match) {
-    return {
-      label: match[1].trim(),
-      body: match[2].trim()
-    };
-  }
-  match = trimmed.match(/^(.{1,80}?\s[-—])\s*(.+)$/);
-  if (match) {
-    return {
-      label: match[1].trim(),
-      body: match[2].trim()
-    };
-  }
-  return { label: "", body: trimmed };
-}
-function addSection(parent, title, items, className, settings, options) {
-  if (items.length === 0) return;
-  const section = createDiv("sd-monster-section");
-  section.appendChild(createDiv("sd-monster-section-title", title));
-  const list = createList(className);
-  for (const item of items) {
-    const li = createListItem();
-    const { label, body } = splitLabelAndBody(item);
-    if (label) {
-      li.appendChild(createSpan("sd-monster-ability-label", label));
-    }
-    if (body) {
-      if (label) {
-        li.appendChild(document.createTextNode(" "));
-      }
-      const bodyEl = createSpan("sd-monster-ability-text");
-      if (settings.enableDiceRollerIntegration && options.onRollDice) {
-        appendTextWithDamageDiceButtons(bodyEl, body, options.onRollDice);
-      } else {
-        bodyEl.textContent = body;
-      }
-      li.appendChild(bodyEl);
-    }
-    if (!label) {
-      if (settings.enableDiceRollerIntegration && options.onRollDice) {
-        appendTextWithDamageDiceButtons(li, item, options.onRollDice);
-      } else {
-        li.textContent = item;
-      }
-    }
-    list.appendChild(li);
-  }
-  section.appendChild(list);
-  parent.appendChild(section);
-}
-function renderMonsterBlock(container, monster, settings, warnings = [], options = {}) {
-  container.innerHTML = "";
-  const card = createDiv(
-    [
-      "sd-monster-card",
-      settings.compactMode ? "is-compact" : ""
-    ].filter(Boolean).join(" ")
-  );
-  const header = createDiv("sd-monster-header");
-  header.appendChild(createDiv("sd-monster-name", monster.name));
-  const meta = createDiv("sd-monster-meta");
-  const metaParts = [];
-  if (monster.level) {
-    metaParts.push(createSpan(void 0, `Level ${monster.level}`));
-  }
-  if (monster.alignment) {
-    const alignmentSpan = createSpan(void 0, `AL ${monster.alignment}`);
-    const tooltip = getAlignmentLabel(monster.alignment);
-    if (tooltip) {
-      alignmentSpan.title = tooltip;
-    }
-    metaParts.push(alignmentSpan);
-  }
-  metaParts.forEach((part, index) => {
-    meta.appendChild(part);
-    if (index < metaParts.length - 1) {
-      meta.appendChild(createSpan(void 0, " \u2022 "));
-    }
-  });
-  header.appendChild(meta);
-  card.appendChild(header);
-  const core = createDiv("sd-monster-core");
-  core.appendChild(createDiv("sd-monster-core-item", `AC ${monster.ac}`));
-  core.appendChild(createDiv("sd-monster-core-item", `HP ${monster.hp}`));
-  if (monster.mv) {
-    core.appendChild(createDiv("sd-monster-core-item", `MV ${monster.mv}`));
-  }
-  card.appendChild(core);
-  if (monster.atk.length > 0) {
-    const atkSection = createDiv("sd-monster-section");
-    atkSection.appendChild(createDiv("sd-monster-section-title", "ATTACKS"));
-    const atkList = createList("sd-monster-attacks");
-    for (const attack of monster.atk) {
-      const li = createListItem("sd-monster-attack");
-      appendRenderedAttack(li, renderAttackText(attack), settings, options);
-      atkList.appendChild(li);
-    }
-    atkSection.appendChild(atkList);
-    card.appendChild(atkSection);
-  }
-  const abilities = createDiv("sd-monster-section");
-  abilities.appendChild(createDiv("sd-monster-section-title", "ABILITIES"));
-  const grid = createDiv("sd-monster-abilities");
-  grid.appendChild(createDiv("sd-monster-ability", `STR ${monster.stats.str}`));
-  grid.appendChild(createDiv("sd-monster-ability", `DEX ${monster.stats.dex}`));
-  grid.appendChild(createDiv("sd-monster-ability", `CON ${monster.stats.con}`));
-  grid.appendChild(createDiv("sd-monster-ability", `INT ${monster.stats.int}`));
-  grid.appendChild(createDiv("sd-monster-ability", `WIS ${monster.stats.wis}`));
-  grid.appendChild(createDiv("sd-monster-ability", `CHA ${monster.stats.cha}`));
-  abilities.appendChild(grid);
-  card.appendChild(abilities);
-  addSection(card, "TRAITS", monster.traits, "sd-monster-list", settings, options);
-  addSection(card, "SPECIALS", monster.specials, "sd-monster-list", settings, options);
-  addSection(card, "SPELLS", monster.spells, "sd-monster-list", settings, options);
-  addSection(card, "GEAR", monster.gear, "sd-monster-list", settings, options);
-  if (monster.description) {
-    const desc = createDiv("sd-monster-section");
-    desc.appendChild(createDiv("sd-monster-description", monster.description));
-    card.appendChild(desc);
-  }
-  if (settings.showSource && monster.source) {
-    const source = createDiv("sd-monster-footer");
-    source.appendChild(createSpan("sd-monster-source", `Source: ${monster.source}`));
-    card.appendChild(source);
-  }
-  if (settings.showTags && monster.tags.length > 0) {
-    const tags = createDiv("sd-monster-tags");
-    for (const tag of monster.tags) {
-      tags.appendChild(createSpan("sd-monster-tag", tag));
-    }
-    card.appendChild(tags);
-  }
-  if (warnings.length > 0) {
-    const warningBox = createDiv("sd-monster-warning-box");
-    for (const warning of warnings) {
-      warningBox.appendChild(createDiv("sd-monster-warning", warning));
-    }
-    card.appendChild(warningBox);
-  }
-  container.appendChild(card);
-}
-
 // src/templates/monsterTemplate.ts
 function buildMonsterTemplate(name = "New Monster") {
   return `---
@@ -927,6 +670,35 @@ tags:
 ## Tactics
 
 ## Encounter Ideas
+`;
+}
+function buildMonsterBlock(name = "New Monster") {
+  return `
+\`\`\`shadowdark
+shadowdarkType: monster
+name: ${name}
+level: 1
+alignment: C
+ac: 13
+hp: 5
+mv: near
+atk:
+  - 1 Dagger +2 (1d4)
+str: -1
+dex: +2
+con: +0
+int: +0
+wis: -1
+cha: -1
+traits:
+  - Sneaky
+  - Dark-adapted
+description: A wiry goblin that stalks the edges of torchlight.
+source: Homebrew
+tags:
+  - shadowdark
+  - goblin
+\`\`\`
 `;
 }
 
@@ -1029,8 +801,8 @@ var ShadowdarkStatblocksSettingTab = class extends import_obsidian3.PluginSettin
       })
     );
     new import_obsidian3.Setting(containerEl).setName("Render frontmatter monsters").setDesc("Render statblocks from monster note frontmatter in reading view.").addToggle(
-      (toggle) => toggle.setValue(this.plugin.settings.renderFrontmatterMonsters).onChange(async (value) => {
-        this.plugin.settings.renderFrontmatterMonsters = value;
+      (toggle) => toggle.setValue(this.plugin.settings.renderFrontmatter).onChange(async (value) => {
+        this.plugin.settings.renderFrontmatter = value;
         await this.plugin.savePluginSettings();
         void this.plugin.refreshMonsterView();
       })
@@ -1043,16 +815,16 @@ var ShadowdarkStatblocksSettingTab = class extends import_obsidian3.PluginSettin
       })
     );
     new import_obsidian3.Setting(containerEl).setName("Hide monster properties").setDesc("Hide Obsidian's native properties section in reading view for monster notes.").addToggle(
-      (toggle) => toggle.setValue(this.plugin.settings.hideMonsterProperties).onChange(async (value) => {
-        this.plugin.settings.hideMonsterProperties = value;
+      (toggle) => toggle.setValue(this.plugin.settings.hideProperties).onChange(async (value) => {
+        this.plugin.settings.hideProperties = value;
         await this.plugin.savePluginSettings();
         void this.plugin.refreshMonsterView();
       })
     );
     new import_obsidian3.Setting(containerEl).setName("Files").setHeading();
     new import_obsidian3.Setting(containerEl).setName("Monster folder").setDesc("Folder used when creating new monster notes.").addText(
-      (text) => text.setPlaceholder("Shadowdark/Monsters").setValue(this.plugin.settings.monsterFolder).onChange(async (value) => {
-        this.plugin.settings.monsterFolder = value.trim() || "Shadowdark/Monsters";
+      (text) => text.setPlaceholder("Shadowdark/Monsters").setValue(this.plugin.settings.folder).onChange(async (value) => {
+        this.plugin.settings.folder = value.trim() || "Shadowdark/Monsters";
         await this.plugin.savePluginSettings();
       })
     );
@@ -1194,6 +966,455 @@ function fixMonsterCommonIssues(monster) {
   }
 }
 
+// src/render/renderMonsterBlock.ts
+function renderMonsterBlock(container, monster, settings, warnings = [], options = {}) {
+  container.innerHTML = "";
+  const card = createDiv(
+    [
+      "sd-card",
+      settings.compactMode ? "is-compact" : ""
+    ].filter(Boolean).join(" ")
+  );
+  const header = createDiv("sd-header");
+  header.appendChild(createDiv("sd-name", monster.name));
+  const meta = createDiv("sd-meta");
+  const metaParts = [];
+  if (monster.level) {
+    metaParts.push(createSpan(void 0, `Level ${monster.level}`));
+  }
+  if (monster.alignment) {
+    const alignmentSpan = createSpan(void 0, `AL ${monster.alignment}`);
+    const tooltip = getAlignmentLabel(monster.alignment);
+    if (tooltip) {
+      alignmentSpan.title = tooltip;
+    }
+    metaParts.push(alignmentSpan);
+  }
+  metaParts.forEach((part, index) => {
+    meta.appendChild(part);
+    if (index < metaParts.length - 1) {
+      meta.appendChild(createSpan(void 0, " \u2022 "));
+    }
+  });
+  header.appendChild(meta);
+  card.appendChild(header);
+  const core = createDiv("sd-core");
+  core.appendChild(createDiv("sd-core-item", `AC ${monster.ac}`));
+  core.appendChild(createDiv("sd-core-item", `HP ${monster.hp}`));
+  if (monster.mv) {
+    core.appendChild(createDiv("sd-core-item", `MV ${monster.mv}`));
+  }
+  card.appendChild(core);
+  if (monster.atk.length > 0) {
+    const atkSection = createDiv("sd-section");
+    atkSection.appendChild(createDiv("sd-section-title", "ATTACKS"));
+    const atkList = createList("sd-attacks");
+    for (const attack of monster.atk) {
+      const li = createListItem("sd-attack");
+      appendRenderedAttack(li, renderAttackText(attack), settings, options);
+      atkList.appendChild(li);
+    }
+    atkSection.appendChild(atkList);
+    card.appendChild(atkSection);
+  }
+  const abilities = createDiv("sd-section");
+  abilities.appendChild(createDiv("sd-section-title", "ABILITIES"));
+  const grid = createDiv("sd-abilities");
+  grid.appendChild(createDiv("sd-ability", `STR ${monster.stats.str}`));
+  grid.appendChild(createDiv("sd-ability", `DEX ${monster.stats.dex}`));
+  grid.appendChild(createDiv("sd-ability", `CON ${monster.stats.con}`));
+  grid.appendChild(createDiv("sd-ability", `INT ${monster.stats.int}`));
+  grid.appendChild(createDiv("sd-ability", `WIS ${monster.stats.wis}`));
+  grid.appendChild(createDiv("sd-ability", `CHA ${monster.stats.cha}`));
+  abilities.appendChild(grid);
+  card.appendChild(abilities);
+  addSection(card, "TRAITS", monster.traits, "sd-list", settings, options);
+  addSection(card, "SPECIALS", monster.specials, "sd-list", settings, options);
+  addSection(card, "SPELLS", monster.spells, "sd-list", settings, options);
+  addSection(card, "GEAR", monster.gear, "sd-list", settings, options);
+  if (monster.description) {
+    const desc = createDiv("sd-section");
+    desc.appendChild(createDiv("sd-description", monster.description));
+    card.appendChild(desc);
+  }
+  if (settings.showSource && monster.source) {
+    const source = createDiv("sd-footer");
+    source.appendChild(createSpan("sd-source", `Source: ${monster.source}`));
+    card.appendChild(source);
+  }
+  if (settings.showTags && monster.tags.length > 0) {
+    const tags = createDiv("sd-tags");
+    for (const tag of monster.tags) {
+      tags.appendChild(createSpan("sd-tag", tag));
+    }
+    card.appendChild(tags);
+  }
+  if (warnings.length > 0) {
+    const warningBox = createDiv("sd-warning-box");
+    for (const warning of warnings) {
+      warningBox.appendChild(createDiv("sd-warning", warning));
+    }
+    card.appendChild(warningBox);
+  }
+  container.appendChild(card);
+}
+
+// src/render/renderPlayerBlock.ts
+function renderPlayerBlock(container, player, settings, warnings = [], options = {}) {
+  container.innerHTML = "";
+  const card = createDiv(
+    [
+      "sd-card",
+      settings.compactMode ? "is-compact" : ""
+    ].filter(Boolean).join(" ")
+  );
+  const header = createDiv("sd-header");
+  header.appendChild(createDiv("sd-name", player.name));
+  const experience = createDiv("sd-meta");
+  const experienceParts = [];
+  if (player.level) {
+    experienceParts.push(createSpan(void 0, `Level ${player.level}`));
+  }
+  if (player.xp) {
+    experienceParts.push(createSpan(void 0, `XP ${player.xp} / 10`));
+  }
+  if (player.alignment) {
+    const alignmentSpan = createSpan(void 0, `AL ${player.alignment}`);
+    const tooltip = getAlignmentLabel(player.alignment);
+    if (tooltip) {
+      alignmentSpan.title = tooltip;
+    }
+    experienceParts.push(alignmentSpan);
+  }
+  experienceParts.forEach((part, index) => {
+    experience.appendChild(part);
+    if (index < experienceParts.length - 1) {
+      experience.appendChild(createSpan(void 0, " \u2022 "));
+    }
+  });
+  header.appendChild(experience);
+  const lore = createDiv("sd-meta");
+  const loreParts = [];
+  if (player.ancestry) {
+    loreParts.push(createSpan(void 0, `Ancestry: ${player.ancestry}`));
+  }
+  if (player.class) {
+    loreParts.push(createSpan(void 0, `Class: ${player.class}`));
+  }
+  if (player.title) {
+    loreParts.push(createSpan(void 0, `Title: ${player.title}`));
+  }
+  if (player.background) {
+    loreParts.push(createSpan(void 0, `Background: ${player.background}`));
+  }
+  if (player.deity) {
+    loreParts.push(createSpan(void 0, `Deity: ${player.deity}`));
+  }
+  loreParts.forEach((part, index) => {
+    lore.appendChild(part);
+    if (index < loreParts.length - 1) {
+      lore.appendChild(createSpan(void 0, " \u2022 "));
+    }
+  });
+  header.appendChild(lore);
+  card.appendChild(header);
+  const core = createDiv("sd-core");
+  core.appendChild(createDiv("sd-core-item", `AC ${player.ac}`));
+  core.appendChild(createDiv("sd-core-item", `HP ${player.hp}`));
+  if (player.mv) {
+    core.appendChild(createDiv("sd-core-item", `MV ${player.mv}`));
+  }
+  card.appendChild(core);
+  if (player.atk.length > 0) {
+    const atkSection = createDiv("sd-section");
+    atkSection.appendChild(createDiv("sd-section-title", "ATTACKS"));
+    const atkList = createList("sd-attacks");
+    for (const attack of player.atk) {
+      const li = createListItem("sd-attack");
+      appendRenderedAttack(li, renderAttackText(attack), settings, options);
+      atkList.appendChild(li);
+    }
+    atkSection.appendChild(atkList);
+    card.appendChild(atkSection);
+  }
+  const abilities = createDiv("sd-section");
+  abilities.appendChild(createDiv("sd-section-title", "ABILITIES"));
+  const grid = createDiv("sd-abilities");
+  grid.appendChild(createDiv("sd-ability", `STR ${player.stats.str}`));
+  grid.appendChild(createDiv("sd-ability", `DEX ${player.stats.dex}`));
+  grid.appendChild(createDiv("sd-ability", `CON ${player.stats.con}`));
+  grid.appendChild(createDiv("sd-ability", `INT ${player.stats.int}`));
+  grid.appendChild(createDiv("sd-ability", `WIS ${player.stats.wis}`));
+  grid.appendChild(createDiv("sd-ability", `CHA ${player.stats.cha}`));
+  abilities.appendChild(grid);
+  card.appendChild(abilities);
+  addSection(card, "TALENTS", player.talents, "sd-list", settings, options);
+  addSection(card, "SPELLS", player.spells, "sd-list", settings, options);
+  addSection(card, "GEAR", player.gear, "sd-list", settings, options);
+  if (settings.showSource && player.source) {
+    const source = createDiv("sd-footer");
+    source.appendChild(createSpan("sd-source", `Source: ${player.source}`));
+    card.appendChild(source);
+  }
+  if (settings.showTags && player.tags.length > 0) {
+    const tags = createDiv("sd-tags");
+    for (const tag of player.tags) {
+      tags.appendChild(createSpan("sd-tag", tag));
+    }
+    card.appendChild(tags);
+  }
+  if (warnings.length > 0) {
+    const warningBox = createDiv("sd-warning-box");
+    for (const warning of warnings) {
+      warningBox.appendChild(createDiv("sd-warning", warning));
+    }
+    card.appendChild(warningBox);
+  }
+  container.appendChild(card);
+}
+
+// src/render/render.ts
+function createDiv(className, text) {
+  const el = document.createElement("div");
+  if (className) el.className = className;
+  if (text !== void 0) el.textContent = text;
+  return el;
+}
+function createSpan(className, text) {
+  const el = document.createElement("span");
+  if (className) el.className = className;
+  if (text !== void 0) el.textContent = text;
+  return el;
+}
+function createList(className) {
+  const el = document.createElement("ul");
+  if (className) el.className = className;
+  return el;
+}
+function createListItem(className) {
+  const el = document.createElement("li");
+  if (className) el.className = className;
+  return el;
+}
+function renderAttackText(attack) {
+  if (attack.raw) return attack.raw;
+  const parts = [attack.name];
+  if (attack.bonus) parts.push(attack.bonus);
+  if (attack.damage) parts.push(`(${attack.damage})`);
+  if (attack.range) parts.push(`[${attack.range}]`);
+  if (attack.notes) parts.push(`- ${attack.notes}`);
+  return parts.join(" ").trim();
+}
+function getAlignmentLabel(alignment) {
+  const normalized = alignment.trim().toUpperCase();
+  switch (normalized) {
+    case "L":
+      return "Lawful";
+    case "N":
+      return "Neutral";
+    case "C":
+      return "Chaotic";
+    default:
+      return "";
+  }
+}
+function splitAttackConnector(text) {
+  const trimmed = text.trim();
+  const match = trimmed.match(/^(AND|OR)\s+(.+)$/i);
+  if (!match) {
+    return { connector: null, body: trimmed };
+  }
+  return {
+    connector: match[1].toUpperCase(),
+    body: match[2].trim()
+  };
+}
+function normalizeDiceFormula(formula) {
+  return formula.replace(/\s+/g, "");
+}
+function attackBonusToFormula(bonus) {
+  const normalized = bonus.trim();
+  return `1d20${normalized}`;
+}
+function createDiceRollButton(text, formula, onRollDice) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "sd-dice-button";
+  button.textContent = text;
+  button.title = `Roll ${formula}`;
+  button.addEventListener("click", (evt) => {
+    evt.preventDefault();
+    evt.stopPropagation();
+    onRollDice(formula);
+  });
+  return button;
+}
+function appendAttackBodyWithDiceButtons(parent, body, onRollDice) {
+  const attackBonusRegex = /([+-]\d+)/;
+  const damageRegex = /\b(\d+d\d+(?:\s*[+-]\s*\d+)?)\b/i;
+  const replacements = [];
+  const bonusMatch = attackBonusRegex.exec(body);
+  if ((bonusMatch == null ? void 0 : bonusMatch.index) !== void 0) {
+    const text = bonusMatch[1];
+    replacements.push({
+      start: bonusMatch.index,
+      end: bonusMatch.index + text.length,
+      text,
+      formula: attackBonusToFormula(text)
+    });
+  }
+  const damageMatch = damageRegex.exec(body);
+  if ((damageMatch == null ? void 0 : damageMatch.index) !== void 0) {
+    const text = damageMatch[1];
+    replacements.push({
+      start: damageMatch.index,
+      end: damageMatch.index + text.length,
+      text,
+      formula: normalizeDiceFormula(text)
+    });
+  }
+  replacements.sort((a, b) => a.start - b.start);
+  let cursor = 0;
+  for (const replacement of replacements) {
+    if (replacement.start < cursor) {
+      continue;
+    }
+    if (replacement.start > cursor) {
+      parent.appendChild(document.createTextNode(body.slice(cursor, replacement.start)));
+    }
+    parent.appendChild(
+      createDiceRollButton(replacement.text, replacement.formula, onRollDice)
+    );
+    cursor = replacement.end;
+  }
+  if (cursor < body.length) {
+    parent.appendChild(document.createTextNode(body.slice(cursor)));
+  }
+}
+function appendTextWithDamageDiceButtons(parent, text, onRollDice) {
+  const damageRegex = /\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/gi;
+  let cursor = 0;
+  let match;
+  while ((match = damageRegex.exec(text)) !== null) {
+    const diceText = match[0];
+    const start = match.index;
+    const end = start + diceText.length;
+    if (start > cursor) {
+      parent.appendChild(document.createTextNode(text.slice(cursor, start)));
+    }
+    parent.appendChild(
+      createDiceRollButton(diceText, normalizeDiceFormula(diceText), onRollDice)
+    );
+    cursor = end;
+  }
+  if (cursor < text.length) {
+    parent.appendChild(document.createTextNode(text.slice(cursor)));
+  }
+}
+function appendRenderedAttack(li, attackText, settings, options) {
+  const { connector, body } = splitAttackConnector(attackText);
+  if (connector) {
+    li.appendChild(createSpan("sd-attack-connector", `${connector} `));
+  }
+  const attackTextEl = createSpan("sd-attack-text");
+  if (settings.enableDiceRollerIntegration && options.onRollDice) {
+    appendAttackBodyWithDiceButtons(attackTextEl, body, options.onRollDice);
+  } else {
+    attackTextEl.textContent = body;
+  }
+  li.appendChild(attackTextEl);
+}
+function splitLabelAndBody(text) {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return { label: "", body: "" };
+  }
+  let match = null;
+  match = trimmed.match(/^(.{1,100}?\([^)]{1,40}\)\.)\s*(.+)$/);
+  if (match) {
+    return {
+      label: match[1].trim(),
+      body: match[2].trim()
+    };
+  }
+  match = trimmed.match(/^([^.!?:]{1,80}[.!?])\s*(.+)$/);
+  if (match) {
+    return {
+      label: match[1].trim(),
+      body: match[2].trim()
+    };
+  }
+  match = trimmed.match(/^([^:]{1,80}:)\s*(.+)$/);
+  if (match) {
+    return {
+      label: match[1].trim(),
+      body: match[2].trim()
+    };
+  }
+  match = trimmed.match(/^(.{1,80}?\s[-—])\s*(.+)$/);
+  if (match) {
+    return {
+      label: match[1].trim(),
+      body: match[2].trim()
+    };
+  }
+  return { label: "", body: trimmed };
+}
+function addSection(parent, title, items, className, settings, options) {
+  if (items.length === 0) return;
+  const section = createDiv("sd-section");
+  section.appendChild(createDiv("sd-section-title", title));
+  const list = createList(className);
+  for (const item of items) {
+    const li = createListItem();
+    const { label, body } = splitLabelAndBody(item);
+    if (label) {
+      li.appendChild(createSpan("sd-ability-label", label));
+    }
+    if (body) {
+      if (label) {
+        li.appendChild(document.createTextNode(" "));
+      }
+      const bodyEl = createSpan("sd-ability-text");
+      if (settings.enableDiceRollerIntegration && options.onRollDice) {
+        appendTextWithDamageDiceButtons(bodyEl, body, options.onRollDice);
+      } else {
+        bodyEl.textContent = body;
+      }
+      li.appendChild(bodyEl);
+    }
+    if (!label) {
+      if (settings.enableDiceRollerIntegration && options.onRollDice) {
+        appendTextWithDamageDiceButtons(li, item, options.onRollDice);
+      } else {
+        li.textContent = item;
+      }
+    }
+    list.appendChild(li);
+  }
+  section.appendChild(list);
+  parent.appendChild(section);
+}
+function render(container, entity, settings, warnings = [], options = {}) {
+  if (entity.shadowdarkType === "monster") {
+    renderMonsterBlock(
+      container,
+      entity,
+      settings,
+      warnings,
+      options
+    );
+  } else {
+    renderPlayerBlock(
+      container,
+      entity,
+      settings,
+      warnings,
+      options
+    );
+  }
+}
+
 // src/modals/ImportPreviewModal.ts
 var SOURCE_OPTIONS = [
   "Core Rules",
@@ -1230,8 +1451,8 @@ function stopKeyEvent(evt) {
 function normalizeLines(value) {
   return value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
-function joinAttackLines(monster) {
-  return monster.atk.map((a) => a.raw || a.name).join("\n");
+function joinAttackLines(entity) {
+  return entity.atk.map((a) => a.raw || a.name).join("\n");
 }
 function splitTags(value) {
   return value.split(",").map((tag) => tag.trim()).filter(Boolean);
@@ -1297,7 +1518,7 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
   refreshPreview() {
     if (!this.previewEl) return;
     this.previewEl.empty();
-    renderMonsterBlock(
+    render(
       this.previewEl,
       this.monster,
       {
@@ -2011,14 +2232,14 @@ function splitRawShadowdarkBlocks(input) {
   return blocks;
 }
 
-// src/modals/MonsterBrowserModal.ts
+// src/modals/BrowserModal.ts
 var import_obsidian6 = require("obsidian");
 var import_obsidian7 = require("obsidian");
-var MonsterBrowserModal = class extends import_obsidian6.Modal {
+var EntityBrowserModal = class extends import_obsidian6.Modal {
   constructor(app, plugin) {
     super(app);
-    this.allMonsters = [];
-    this.filteredMonsters = [];
+    this.all = [];
+    this.filtered = [];
     this.searchText = "";
     this.selectedSource = "";
     this.selectedTag = "";
@@ -2031,23 +2252,23 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   }
   async onOpen() {
     const { contentEl, titleEl } = this;
-    this.modalEl.addClass("sd-monster-browser-modal-shell");
-    titleEl.setText("Monster browser");
+    this.modalEl.addClass("sd-browser-modal-shell");
+    titleEl.setText("Entity browser");
     contentEl.empty();
-    contentEl.addClass("sd-monster-browser-modal");
-    this.allMonsters = await this.plugin.getAllMonsterIndexEntries();
-    this.filteredMonsters = [...this.allMonsters];
+    contentEl.addClass("sd-browser-modal");
+    this.all = await this.plugin.getAllIndexEntries();
+    this.filtered = [...this.all];
     const filtersShell = contentEl.createDiv({
-      cls: "sd-monster-browser-filters-shell"
+      cls: "sd-browser-filters-shell"
     });
     const filtersToggle = filtersShell.createEl("button", {
-      cls: "sd-monster-browser-filters-toggle",
+      cls: "sd-browser-filters-toggle",
       text: "Filters"
     });
     filtersToggle.type = "button";
     filtersToggle.setAttribute("aria-expanded", "false");
     const controlsEl = filtersShell.createDiv({
-      cls: "sd-monster-browser-controls is-collapsed-mobile"
+      cls: "sd-browser-controls is-collapsed-mobile"
     });
     filtersToggle.addEventListener("click", () => {
       const isCollapsed = controlsEl.hasClass("is-collapsed-mobile");
@@ -2057,9 +2278,9 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
       filtersToggle.setAttribute("aria-expanded", String(isCollapsed));
     });
     const createFilterCard = (labelText) => {
-      const card = controlsEl.createDiv({ cls: "sd-monster-browser-filter" });
+      const card = controlsEl.createDiv({ cls: "sd-browser-filter" });
       card.createEl("label", {
-        cls: "sd-monster-browser-filter-label",
+        cls: "sd-browser-filter-label",
         text: labelText
       });
       return card;
@@ -2068,7 +2289,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     const searchInputEl = searchCard.createEl("input", {
       type: "text",
       placeholder: "Search by name...",
-      cls: "sd-monster-browser-input"
+      cls: "sd-browser-input"
     });
     searchInputEl.value = this.searchText;
     searchInputEl.addEventListener("input", () => {
@@ -2077,10 +2298,10 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     });
     const sourceCard = createFilterCard("Source");
     const sourceSelectEl = sourceCard.createEl("select", {
-      cls: "sd-monster-browser-select"
+      cls: "sd-browser-select"
     });
     const allSources = Array.from(
-      new Set(this.allMonsters.map((m) => m.source).filter(Boolean))
+      new Set(this.all.map((m) => m.source).filter(Boolean))
     ).sort((a, b) => a.localeCompare(b));
     sourceSelectEl.appendChild(new Option("All", ""));
     for (const source of allSources) {
@@ -2093,11 +2314,11 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     });
     const tagCard = createFilterCard("Tag");
     const tagSelectEl = tagCard.createEl("select", {
-      cls: "sd-monster-browser-select"
+      cls: "sd-browser-select"
     });
     const allTagsSet = /* @__PURE__ */ new Set();
-    for (const monster of this.allMonsters) {
-      for (const tag of monster.tags) {
+    for (const entity of this.all) {
+      for (const tag of entity.tags) {
         if (tag) allTagsSet.add(tag);
       }
     }
@@ -2115,7 +2336,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     });
     const maxLevelCard = createFilterCard("Max Level");
     const maxLevelSelectEl = maxLevelCard.createEl("select", {
-      cls: "sd-monster-browser-select"
+      cls: "sd-browser-select"
     });
     maxLevelSelectEl.appendChild(new Option("Any", ""));
     for (let i = 0; i <= 20; i++) {
@@ -2126,10 +2347,10 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
       this.selectedMaxLevel = maxLevelSelectEl.value;
       this.applyFilters();
     });
-    const actionsEl = filtersShell.createDiv({ cls: "sd-monster-browser-actions" });
+    const actionsEl = filtersShell.createDiv({ cls: "sd-browser-actions" });
     actionsEl.addClass("is-collapsed-mobile");
     const clearButton = actionsEl.createEl("button", {
-      cls: "mod-cta sd-monster-browser-clear-button",
+      cls: "mod-cta sd-browser-clear-button",
       text: "Clear filters"
     });
     clearButton.addEventListener("click", () => {
@@ -2143,13 +2364,13 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
       maxLevelSelectEl.value = "";
       this.applyFilters();
     });
-    this.resultsEl = contentEl.createDiv({ cls: "sd-monster-browser-results" });
+    this.resultsEl = contentEl.createDiv({ cls: "sd-browser-results" });
     this.resultsEl.addEventListener("scroll", () => {
       this.hideHoverCard();
     });
-    this.hoverCardEl = contentEl.createDiv({ cls: "sd-monster-browser-hover-card" });
+    this.hoverCardEl = contentEl.createDiv({ cls: "sd-browser-hover-card" });
     this.hoverPreviewEl = this.hoverCardEl.createDiv({
-      cls: "sd-monster-browser-hover-card-inner"
+      cls: "sd-browser-hover-card-inner"
     });
     this.hoverCardEl.addEventListener("mouseenter", () => {
       this.clearHoverHideTimeout();
@@ -2161,7 +2382,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   }
   onClose() {
     this.clearHoverHideTimeout();
-    this.modalEl.removeClass("sd-monster-browser-modal-shell");
+    this.modalEl.removeClass("sd-browser-modal-shell");
     this.contentEl.empty();
   }
   clearHoverHideTimeout() {
@@ -2181,11 +2402,11 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
       this.hoverCardEl.classList.remove("is-visible");
     }
   }
-  showHoverCard(monster) {
-    const result = parseFrontmatter(monster.frontmatter);
+  showHoverCard(entity) {
+    const result = parseFrontmatter(entity.frontmatter);
     if (!result.success || !result.data) return;
     this.hoverPreviewEl.empty();
-    renderMonsterBlock(
+    render(
       this.hoverPreviewEl,
       result.data,
       this.plugin.settings,
@@ -2195,11 +2416,11 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     this.positionHoverCard();
   }
   applyFilters() {
-    this.filteredMonsters = this.allMonsters.filter((monster) => {
-      const matchesSearch = !this.searchText || monster.name.toLowerCase().includes(this.searchText);
-      const matchesSource = !this.selectedSource || monster.source === this.selectedSource;
-      const matchesTag = !this.selectedTag || monster.tags.includes(this.selectedTag);
-      const matchesLevel = !this.selectedMaxLevel || (Number(monster.level) || 0) <= Number(this.selectedMaxLevel);
+    this.filtered = this.all.filter((entity) => {
+      const matchesSearch = !this.searchText || entity.name.toLowerCase().includes(this.searchText);
+      const matchesSource = !this.selectedSource || entity.source === this.selectedSource;
+      const matchesTag = !this.selectedTag || entity.tags.includes(this.selectedTag);
+      const matchesLevel = !this.selectedMaxLevel || (Number(entity.level) || 0) <= Number(this.selectedMaxLevel);
       return matchesSearch && matchesSource && matchesTag && matchesLevel;
     });
     this.renderResults();
@@ -2229,17 +2450,17 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   renderResults() {
     this.resultsEl.empty();
     this.hideHoverCard();
-    const summary = this.resultsEl.createDiv({ cls: "sd-monster-browser-summary" });
-    summary.setText(`${this.filteredMonsters.length} monster(s)`);
-    if (this.filteredMonsters.length === 0) {
+    const summary = this.resultsEl.createDiv({ cls: "sd-browser-summary" });
+    summary.setText(`${this.filtered.length} ${this.filtered.length === 1 ? "entity" : "entities"}`);
+    if (this.filtered.length === 0) {
       this.resultsEl.createDiv({
-        cls: "sd-monster-browser-empty",
-        text: "No monsters match those filters."
+        cls: "sd-browser-empty",
+        text: "No entities match those filters."
       });
       return;
     }
-    for (const monster of this.filteredMonsters) {
-      const row = this.resultsEl.createDiv({ cls: "sd-monster-browser-row" });
+    for (const entity of this.filtered) {
+      const row = this.resultsEl.createDiv({ cls: "sd-browser-row" });
       row.addEventListener("mouseenter", (evt) => {
         this.clearHoverHideTimeout();
         this.hoverMouseX = evt.clientX;
@@ -2248,7 +2469,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
           window.clearTimeout(this.hoverShowTimeout);
         }
         this.hoverShowTimeout = window.setTimeout(() => {
-          this.showHoverCard(monster);
+          this.showHoverCard(entity);
         }, 120);
       });
       row.addEventListener("mousemove", (evt) => {
@@ -2264,29 +2485,29 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
         this.scheduleHideHoverCard();
       });
       row.createDiv({
-        cls: "sd-monster-browser-name",
-        text: monster.name
+        cls: "sd-browser-name",
+        text: entity.name
       });
       const metaParts = [
-        monster.level ? `LV ${monster.level}` : "",
-        monster.alignment ? `AL ${monster.alignment}` : "",
-        monster.source || ""
+        entity.level ? `LV ${entity.level}` : "",
+        entity.alignment ? `AL ${entity.alignment}` : "",
+        entity.source || ""
       ].filter(Boolean);
       row.createDiv({
-        cls: "sd-monster-browser-meta",
+        cls: "sd-browser-meta",
         text: metaParts.join(" \u2022 ")
       });
-      if (monster.tags.length > 0) {
-        const tagsEl = row.createDiv({ cls: "sd-monster-browser-tags" });
-        for (const tag of monster.tags) {
+      if (entity.tags.length > 0) {
+        const tagsEl = row.createDiv({ cls: "sd-browser-tags" });
+        for (const tag of entity.tags) {
           tagsEl.createDiv({
-            cls: "sd-monster-browser-tag",
+            cls: "sd-browser-tag",
             text: tag
           });
         }
       }
       row.addEventListener("click", async () => {
-        await this.app.workspace.getLeaf(true).openFile(monster.file);
+        await this.app.workspace.getLeaf(true).openFile(entity.file);
         this.close();
       });
       row.addEventListener("contextmenu", (evt) => {
@@ -2294,25 +2515,25 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
         const menu = new import_obsidian7.Menu();
         menu.addItem(
           (item) => item.setTitle("Open").onClick(async () => {
-            await this.app.workspace.getLeaf(true).openFile(monster.file);
+            await this.app.workspace.getLeaf(true).openFile(entity.file);
             this.close();
           })
         );
         menu.addItem(
           (item) => item.setTitle("Open to the right").onClick(async () => {
             const leaf = this.app.workspace.getLeaf("split", "vertical");
-            await leaf.openFile(monster.file);
+            await leaf.openFile(entity.file);
           })
         );
         menu.addItem(
           (item) => item.setTitle("Copy link").onClick(async () => {
-            const link = `[[${monster.file.basename}]]`;
+            const link = `[[${entity.file.basename}]]`;
             await navigator.clipboard.writeText(link);
           })
         );
         menu.addItem(
           (item) => item.setTitle("Copy embed").onClick(async () => {
-            const embed = `![[${monster.file.basename}]]`;
+            const embed = `![[${entity.file.basename}]]`;
             await navigator.clipboard.writeText(embed);
           })
         );
@@ -2322,16 +2543,89 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
   }
 };
 
+// src/templates/playerTemplate.ts
+function buildPlayerTemplate(name = "New Player") {
+  return `---
+shadowdarkType: player
+name: ${name}
+ancestry: Human
+class: Thief
+level: 1
+xp: 0
+title: Thug
+alignment: N
+background: Scout
+deity: Ramlaat
+ac: 10
+hp: 1
+mv: near
+atk:
+  - Shortsword +0 (1d6)
+str: +0
+dex: +0
+con: +0
+int: +0
+wis: +0
+cha: +0
+talents: []
+spells: []
+gear: []
+source:
+tags:
+  - shadowdark
+---
+
+## Notes
+
+## Gear
+
+## Funds
+`;
+}
+function buildPlayerBlock(name = "New Player") {
+  return `
+\`\`\`shadowdark
+shadowdarkType: player
+name: ${name}
+ancestry: Human
+class: Thief
+level: 1
+xp: 0
+title: Thug
+alignment: N
+background: Scout
+deity: Ramlaat
+ac: 10
+hp: 1
+mv: near
+atk:
+  - Shortsword +0 (1d6)
+str: +0
+dex: +0
+con: +0
+int: +0
+wis: +0
+cha: +0
+talents: []
+spells: []
+gear: []
+source:
+tags:
+  - shadowdark
+\`\`\`
+`;
+}
+
 // src/main.ts
 var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
   constructor() {
     super(...arguments);
     this.renderGeneration = 0;
     this.autoPreviewedLeafFiles = /* @__PURE__ */ new WeakMap();
-    this.parsedMonsterCache = /* @__PURE__ */ new Map();
+    this.parsedCache = /* @__PURE__ */ new Map();
   }
-  renderMonsterInProcessedPreview(el, ctx) {
-    if (!this.settings.renderFrontmatterMonsters) return;
+  renderInProcessedPreview(el, ctx) {
+    if (!this.settings.renderFrontmatter) return;
     if (!el.classList.contains("mod-frontmatter")) {
       return;
     }
@@ -2344,52 +2638,53 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     if (!(file instanceof import_obsidian8.TFile)) return;
     const cache = this.app.metadataCache.getFileCache(file);
     const frontmatter = cache == null ? void 0 : cache.frontmatter;
-    if (!frontmatter || frontmatter.shadowdarkType !== "monster") {
+    const validTypes = ["monster", "player"];
+    if (!frontmatter || !validTypes.includes(frontmatter.shadowdarkType)) {
       return;
     }
-    const result = this.getCachedMonsterParse(file, frontmatter);
+    const result = this.getCachedParse(file, frontmatter);
     if (!result.success || !result.data) return;
     el.setAttribute("data-sd-processed-preview", "true");
     el.innerHTML = "";
     el.classList.remove("mod-frontmatter", "mod-ui", "el-pre");
-    el.classList.add("sd-monster-embed-host");
+    el.classList.add("sd-embed-host");
     const wrapper = document.createElement("div");
-    wrapper.className = "sd-monster-embed-wrapper";
+    wrapper.className = "sd-embed-wrapper";
     wrapper.setAttribute("data-source-path", file.path);
-    renderMonsterBlock(
+    render(
       wrapper,
       result.data,
       this.settings,
       result.warnings,
-      this.getMonsterRenderOptions()
+      this.getRenderOptions()
     );
     el.appendChild(wrapper);
   }
-  getCachedMonsterParse(file, frontmatter) {
-    const cached = this.parsedMonsterCache.get(file.path);
+  getCachedParse(file, frontmatter) {
+    const cached = this.parsedCache.get(file.path);
     if (cached && cached.mtime === file.stat.mtime) {
       return cached.result;
     }
     const result = parseFrontmatter(frontmatter);
-    this.parsedMonsterCache.set(file.path, {
+    this.parsedCache.set(file.path, {
       mtime: file.stat.mtime,
       result
     });
     return result;
   }
-  applyLastUsedSource(monster) {
+  applyLastUsedSource(entity) {
     var _a, _b, _c;
-    if (!((_a = this.settings.lastUsedMonsterSource) == null ? void 0 : _a.trim())) {
-      return monster;
+    if (!((_a = this.settings.lastUsedSource) == null ? void 0 : _a.trim())) {
+      return entity;
     }
-    const currentSource = (_c = (_b = monster.source) == null ? void 0 : _b.trim()) != null ? _c : "";
+    const currentSource = (_c = (_b = entity.source) == null ? void 0 : _b.trim()) != null ? _c : "";
     if (!currentSource || currentSource === "Imported from clipboard" || currentSource === "Core Rules") {
       return {
-        ...monster,
-        source: this.settings.lastUsedMonsterSource
+        ...entity,
+        source: this.settings.lastUsedSource
       };
     }
-    return monster;
+    return entity;
   }
   countStatAnchors(text) {
     const matches = text.match(/\bAC\b[\s\S]{0,120}?\bHP\b[\s\S]{0,120}?\bATK\b/gi);
@@ -2408,7 +2703,7 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     }
     this.app.workspace.trigger("dice-roller:render-dice", cleaned);
   }
-  getMonsterRenderOptions() {
+  getRenderOptions() {
     if (!this.settings.enableDiceRollerIntegration) {
       return {};
     }
@@ -2421,11 +2716,11 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
   async rememberLastUsedSource(source) {
     const trimmed = source.trim();
     if (!trimmed) return;
-    if (this.settings.lastUsedMonsterSource === trimmed) return;
-    this.settings.lastUsedMonsterSource = trimmed;
+    if (this.settings.lastUsedSource === trimmed) return;
+    this.settings.lastUsedSource = trimmed;
     await this.savePluginSettings();
   }
-  async importMultipleFromClipboard() {
+  async importMultipleMonstersFromClipboard() {
     let clipboardText = "";
     try {
       clipboardText = await navigator.clipboard.readText();
@@ -2521,94 +2816,82 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     await this.loadPluginSettings();
     this.addSettingTab(new ShadowdarkStatblocksSettingTab(this.app, this));
     this.registerMarkdownCodeBlockProcessor(
-      "shadowdark-monster",
+      "shadowdark",
       (source, el, _ctx) => {
         const result = parseCodeBlock(source);
         if (!result.success || !result.data) {
-          const errorBox = el.createDiv({ cls: "sd-monster-error-box" });
+          const errorBox = el.createDiv({ cls: "sd-error-box" });
           errorBox.createDiv({
-            text: "Shadowdark monster parse error",
-            cls: "sd-monster-error-title"
+            text: "Shadowdark parse error",
+            cls: "sd-error-title"
           });
           for (const error of result.errors) {
             errorBox.createDiv({
               text: error,
-              cls: "sd-monster-error"
+              cls: "sd-error"
             });
           }
           return;
         }
-        renderMonsterBlock(
+        render(
           el,
           result.data,
           this.settings,
           result.warnings,
-          this.getMonsterRenderOptions()
+          this.getRenderOptions()
         );
       }
     );
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
-        void this.renderAllMonsterViews();
+        void this.renderAllViews();
       })
     );
     this.registerMarkdownPostProcessor((el, ctx) => {
-      this.renderMonsterInProcessedPreview(el, ctx);
+      this.renderInProcessedPreview(el, ctx);
     });
     this.registerEvent(
       this.app.workspace.on("file-open", () => {
-        void this.ensureMonsterViewsInPreview();
-        void this.renderAllMonsterViews();
+        void this.ensureViewsInPreview();
+        void this.renderAllViews();
       })
     );
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
-        void this.renderAllMonsterViews();
+        void this.renderAllViews();
       })
     );
     this.registerEvent(
       this.app.metadataCache.on("changed", () => {
-        void this.renderAllMonsterViews();
+        void this.renderAllViews();
       })
     );
     this.addCommand({
       id: "insert-shadowdark-monster-block",
       name: "Insert Shadowdark monster block",
       editorCallback: (editor) => {
-        const template = [
-          "```shadowdark-monster",
-          "name: Goblin Sneak",
-          "level: 1",
-          "alignment: C",
-          "ac: 13",
-          "hp: 5",
-          "mv: near",
-          "atk:",
-          "  - 1 Dagger +2 (1d4)",
-          "str: -1",
-          "dex: +2",
-          "con: +0",
-          "int: +0",
-          "wis: -1",
-          "cha: -1",
-          "traits:",
-          "  - Sneaky",
-          "  - Dark-adapted",
-          "description: A wiry goblin that stalks the edges of torchlight.",
-          "source: Homebrew",
-          "tags:",
-          "  - shadowdark",
-          "  - goblin",
-          "```"
-        ].join("\n");
-        editor.replaceSelection(template);
+        editor.replaceSelection(buildMonsterBlock());
+      }
+    });
+    this.addCommand({
+      id: "insert-shadowdark-player-block",
+      name: "Insert Shadowdark player block",
+      editorCallback: (editor) => {
+        editor.replaceSelection(buildPlayerBlock());
       }
     });
     this.addCommand({
       id: "create-shadowdark-monster-note",
       name: "Create Shadowdark monster note",
       callback: async () => {
-        await this.createMonsterNote();
+        await this.createNote("monster");
+      }
+    });
+    this.addCommand({
+      id: "create-shadowdark-player-note",
+      name: "Create Shadowdark player note",
+      callback: async () => {
+        await this.createNote("player");
       }
     });
     this.addCommand({
@@ -2636,19 +2919,19 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
       id: "import-multiple-shadowdark-monsters",
       name: "Import multiple Shadowdark monsters from clipboard",
       callback: async () => {
-        await this.importMultipleFromClipboard();
+        await this.importMultipleMonstersFromClipboard();
       }
     });
     this.addCommand({
       id: "open-monster-browser",
-      name: "Open monster browser",
+      name: "Open browser",
       callback: () => {
-        new MonsterBrowserModal(this.app, this).open();
+        new EntityBrowserModal(this.app, this).open();
       }
     });
     window.setTimeout(() => {
-      void this.ensureMonsterViewsInPreview();
-      void this.renderAllMonsterViews();
+      void this.ensureViewsInPreview();
+      void this.renderAllViews();
     }, 100);
   }
   onunload() {
@@ -2660,7 +2943,7 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
         this.showProperties(view);
       }
     }
-    this.parsedMonsterCache.clear();
+    this.parsedCache.clear();
   }
   async loadPluginSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -2669,17 +2952,17 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     await this.saveData(this.settings);
   }
   async refreshMonsterView() {
-    await this.renderAllMonsterViews();
+    await this.renderAllViews();
   }
-  async createMonsterNote() {
-    const folderPath = (0, import_obsidian8.normalizePath)(this.settings.monsterFolder);
+  async createNote(type) {
+    const folderPath = (0, import_obsidian8.normalizePath)(this.settings.folder);
     await this.ensureFolderExists(folderPath);
-    const baseName = "New Monster";
+    const baseName = `New ${type}`;
     const filePath = this.getUniqueFilePath(folderPath, `${baseName}.md`);
-    const content = buildMonsterTemplate(baseName);
+    const content = type === "monster" ? buildMonsterTemplate(baseName) : buildPlayerTemplate(baseName);
     const file = await this.app.vault.create(filePath, content);
     await this.app.workspace.getLeaf(true).openFile(file);
-    new import_obsidian8.Notice(`Created monster note: ${file.basename}`);
+    new import_obsidian8.Notice(`Created ${type} note: ${file.basename}`);
   }
   async importMonsterFromClipboard() {
     let clipboardText = "";
@@ -2693,7 +2976,7 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     await this.openImportPreviewFromText(clipboardText);
   }
   getSuggestedOtherSources() {
-    return getSuggestedOtherSources(this.app, this.settings.monsterFolder);
+    return getSuggestedOtherSources(this.app, this.settings.folder);
   }
   applySmartDefaultTags(monster) {
     var _a, _b, _c, _d, _e, _f;
@@ -2787,13 +3070,13 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     modal.open();
   }
   getSuggestedTags() {
-    return getSuggestedTags(this.app, this.settings.monsterFolder);
+    return getSuggestedTags(this.app, this.settings.folder);
   }
-  getAllMonsterIndexEntries() {
-    return getAllMonsterIndexEntries(this.app, this.settings.monsterFolder);
+  getAllIndexEntries() {
+    return getAllIndexEntries(this.app, this.settings.folder);
   }
   async createImportedMonsterNote(monster, warnings) {
-    const folderPath = (0, import_obsidian8.normalizePath)(this.settings.monsterFolder);
+    const folderPath = (0, import_obsidian8.normalizePath)(this.settings.folder);
     await this.ensureFolderExists(folderPath);
     const safeName = (monster.name || "Imported Monster").trim();
     const existingMonsterFile = this.app.vault.getMarkdownFiles().find((file) => {
@@ -2830,7 +3113,7 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     await this.createImportedMonsterCopy(monster, warnings);
   }
   async createImportedMonsterCopy(monster, warnings) {
-    const folderPath = (0, import_obsidian8.normalizePath)(this.settings.monsterFolder);
+    const folderPath = (0, import_obsidian8.normalizePath)(this.settings.folder);
     await this.ensureFolderExists(folderPath);
     const safeName = monster.name || "Imported Monster";
     const filePath = this.getUniqueFilePath(folderPath, `${safeName}.md`);
@@ -2847,6 +3130,7 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     }
   }
   async editCurrentMonsterNote() {
+    var _a;
     const view = this.app.workspace.getActiveViewOfType(import_obsidian8.MarkdownView);
     if (!view) {
       new import_obsidian8.Notice("No active markdown note.");
@@ -2863,8 +3147,8 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
       new import_obsidian8.Notice("Current note is not a Shadowdark monster.");
       return;
     }
-    const result = this.getCachedMonsterParse(file, parsedFrontmatter);
-    if (!result.success || !result.data) {
+    const result = this.getCachedParse(file, parsedFrontmatter);
+    if (!result.success || !result.data || ((_a = result.data) == null ? void 0 : _a.shadowdarkType) !== "monster") {
       new import_obsidian8.Notice("Could not parse current monster note.");
       return;
     }
@@ -2888,7 +3172,7 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     const body = this.extractBodyAfterFrontmatter(existingContent);
     const updatedContent = buildMonsterNoteContent(monster, body);
     await this.app.vault.modify(file, updatedContent);
-    this.parsedMonsterCache.delete(file.path);
+    this.parsedCache.delete(file.path);
     await this.forceReloadOpenMarkdownFile(file);
     await this.refreshMonsterView();
     new import_obsidian8.Notice(`Updated monster: ${file.basename}`);
@@ -2921,18 +3205,18 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     }
     return candidate;
   }
-  async renderAllMonsterViews() {
+  async renderAllViews() {
     const myGeneration = ++this.renderGeneration;
     const leaves = this.app.workspace.getLeavesOfType("markdown");
     const views = leaves.map((leaf) => leaf.view).filter((view) => view instanceof import_obsidian8.MarkdownView);
     for (const view of views) {
-      await this.renderMonsterView(view, myGeneration);
+      await this.renderView(view, myGeneration);
     }
   }
-  async renderMonsterView(view, generation) {
+  async renderView(view, generation) {
     this.removeExistingFrontmatterRender(view);
     this.showProperties(view);
-    if (!this.settings.renderFrontmatterMonsters) return;
+    if (!this.settings.renderFrontmatter) return;
     if (view.getMode() !== "preview") return;
     const file = view.file;
     if (!(file instanceof import_obsidian8.TFile)) return;
@@ -2940,17 +3224,19 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     if (generation !== this.renderGeneration) return;
     const parsedFrontmatter = this.extractFrontmatter(content);
     if (!parsedFrontmatter) return;
-    if (parsedFrontmatter.shadowdarkType !== "monster") return;
-    if (this.settings.hideMonsterProperties) {
+    const validTypes = ["monster", "player"];
+    if (!validTypes.includes(parsedFrontmatter.shadowdarkType)) return;
+    if (this.settings.hideProperties) {
       this.hideProperties(view);
     }
   }
-  async ensureMonsterViewInPreview(view) {
+  async ensureViewInPreview(view) {
     const file = view.file;
     if (!(file instanceof import_obsidian8.TFile)) return;
     const content = await this.app.vault.read(file);
     const parsedFrontmatter = this.extractFrontmatter(content);
-    if (!parsedFrontmatter || parsedFrontmatter.shadowdarkType !== "monster") {
+    const validTypes = ["monster", "player"];
+    if (!parsedFrontmatter || !validTypes.includes(parsedFrontmatter.shadowdarkType)) {
       return;
     }
     const alreadyAutoPreviewedForThisFile = this.autoPreviewedLeafFiles.get(view) === file.path;
@@ -2980,11 +3266,11 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
       }
     }, 50);
   }
-  async ensureMonsterViewsInPreview() {
+  async ensureViewsInPreview() {
     const leaves = this.app.workspace.getLeavesOfType("markdown");
     const views = leaves.map((leaf) => leaf.view).filter((view) => view instanceof import_obsidian8.MarkdownView);
     for (const view of views) {
-      await this.ensureMonsterViewInPreview(view);
+      await this.ensureViewInPreview(view);
     }
   }
   async forceReloadOpenMarkdownFile(file) {
@@ -3012,17 +3298,17 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
   hideProperties(view) {
     const propertiesEl = view.containerEl.querySelector(".metadata-container");
     if (propertiesEl instanceof HTMLElement) {
-      propertiesEl.classList.add("sd-monster-hide-properties");
+      propertiesEl.classList.add("sd-hide-properties");
     }
   }
   showProperties(view) {
-    const hiddenProperties = view.containerEl.querySelectorAll(".sd-monster-hide-properties");
+    const hiddenProperties = view.containerEl.querySelectorAll(".sd-hide-properties");
     hiddenProperties.forEach((el) => {
-      el.classList.remove("sd-monster-hide-properties");
+      el.classList.remove("sd-hide-properties");
     });
   }
   removeExistingFrontmatterRender(view) {
-    const existing = view.containerEl.querySelectorAll(".sd-monster-frontmatter-wrapper");
+    const existing = view.containerEl.querySelectorAll(".sd-frontmatter-wrapper");
     existing.forEach((el) => {
       el.remove();
     });

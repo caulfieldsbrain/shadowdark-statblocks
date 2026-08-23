@@ -2,10 +2,10 @@ export interface ShadowdarkStatblocksSettings {
   compactMode: boolean;
   showSource: boolean;
   showTags: boolean;
-  renderFrontmatterMonsters: boolean;
-  monsterFolder: string;
-  hideMonsterProperties: boolean;
-  lastUsedMonsterSource: string;
+  renderFrontmatter: boolean;
+  folder: string;
+  hideProperties: boolean;
+  lastUsedSource: string;
   enableDiceRollerIntegration: boolean;
 }
 
@@ -13,9 +13,9 @@ export const DEFAULT_SETTINGS: ShadowdarkStatblocksSettings = {
   compactMode: false,
   showSource: true,
   showTags: true,
-  renderFrontmatterMonsters: true,
-  monsterFolder: "Shadowdark/Monsters",
-  hideMonsterProperties: true,
-  lastUsedMonsterSource: "",
+  renderFrontmatter: true,
+  folder: "Shadowdark",
+  hideProperties: true,
+  lastUsedSource: "",
   enableDiceRollerIntegration: false,
 };

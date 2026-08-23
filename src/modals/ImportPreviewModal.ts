@@ -7,10 +7,10 @@ import {
   TextAreaComponent,
   TextComponent
 } from "obsidian";
-import { ShadowdarkMonster } from "../types";
-import { renderMonsterBlock } from "../render/renderMonsterBlock";
+import { ShadowdarkEntity, ShadowdarkMonster } from "../types";
 import { DEFAULT_SETTINGS } from "../settings";
 import { fixMonsterCommonIssues } from "../utils/fixMonsterCommonIssues";
+import { render } from "../render/render";
 
 export interface ImportPreviewModalOptions {
   monster: ShadowdarkMonster;
@@ -86,8 +86,8 @@ function normalizeLines(value: string): string[] {
     .filter(Boolean);
 }
 
-function joinAttackLines(monster: ShadowdarkMonster): string {
-  return monster.atk.map((a) => a.raw || a.name).join("\n");
+function joinAttackLines(entity: ShadowdarkEntity): string {
+  return entity.atk.map((a) => a.raw || a.name).join("\n");
 }
 
 function splitTags(value: string): string[] {
@@ -227,7 +227,7 @@ export class ImportPreviewModal extends Modal {
 
     this.previewEl.empty();
 
-    renderMonsterBlock(
+    render(
       this.previewEl,
       this.monster,
       {
@@ -435,7 +435,7 @@ export class ImportPreviewModal extends Modal {
     if (
       this.highlightedOtherSourceSuggestionIndex < 0 ||
       this.highlightedOtherSourceSuggestionIndex >=
-        this.filteredOtherSourceSuggestions.length ||
+      this.filteredOtherSourceSuggestions.length ||
       !this.otherSourceInput
     ) {
       return;

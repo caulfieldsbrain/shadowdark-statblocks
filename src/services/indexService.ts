@@ -1,6 +1,6 @@
 import { App, TFile, normalizePath, parseYaml } from "obsidian";
 
-export type MonsterIndexEntry = {
+export type IndexEntry = {
   file: TFile;
   name: string;
   level: string;
@@ -26,9 +26,9 @@ function extractFrontmatter(content: string): Record<string, unknown> | null {
 
 export async function getSuggestedTags(
   app: App,
-  monsterFolder: string
+  folder: string
 ): Promise<string[]> {
-  const folderPath = normalizePath(monsterFolder);
+  const folderPath = normalizePath(folder);
   const files = app.vault
     .getMarkdownFiles()
     .filter(
@@ -42,7 +42,8 @@ export async function getSuggestedTags(
     const content = await app.vault.read(file);
     const frontmatter = extractFrontmatter(content);
 
-    if (!frontmatter || frontmatter.shadowdarkType !== "monster") continue;
+    const validTypes = ["monster", "player"]
+    if (!frontmatter || !validTypes.includes(frontmatter.shadowdarkType as any)) continue;
 
     const rawTags = frontmatter.tags;
     if (Array.isArray(rawTags)) {
@@ -59,9 +60,9 @@ export async function getSuggestedTags(
 
 export async function getSuggestedOtherSources(
   app: App,
-  monsterFolder: string
+  folder: string
 ): Promise<string[]> {
-  const folderPath = normalizePath(monsterFolder);
+  const folderPath = normalizePath(folder);
   const files = app.vault
     .getMarkdownFiles()
     .filter(
@@ -84,7 +85,8 @@ export async function getSuggestedOtherSources(
     const content = await app.vault.read(file);
     const frontmatter = extractFrontmatter(content);
 
-    if (!frontmatter || frontmatter.shadowdarkType !== "monster") continue;
+    const validTypes = ["monster", "player"]
+    if (!frontmatter || !validTypes.includes(frontmatter.shadowdarkType as any)) continue;
 
     const rawSource = frontmatter.source;
     if (typeof rawSource === "string") {
@@ -98,11 +100,11 @@ export async function getSuggestedOtherSources(
   return [...sources].sort((a, b) => a.localeCompare(b));
 }
 
-export function getAllMonsterIndexEntries(
+export function getAllIndexEntries(
   app: App,
-  monsterFolder: string
-): MonsterIndexEntry[] {
-  const folderPath = normalizePath(monsterFolder);
+  folder: string
+): IndexEntry[] {
+  const folderPath = normalizePath(folder);
 
   const files = app.vault
     .getMarkdownFiles()
@@ -111,20 +113,21 @@ export function getAllMonsterIndexEntries(
         file.path.startsWith(`${folderPath}/`) || file.path === `${folderPath}.md`
     );
 
-  const results: MonsterIndexEntry[] = [];
+  const results: IndexEntry[] = [];
 
   for (const file of files) {
     const cache = app.metadataCache.getFileCache(file);
     const frontmatter = cache?.frontmatter as Record<string, unknown> | undefined;
 
-    if (!frontmatter || frontmatter.shadowdarkType !== "monster") continue;
+    const validTypes = ["monster", "player"]
+    if (!frontmatter || !validTypes.includes(frontmatter.shadowdarkType as any)) continue;
 
     results.push({
       file,
       name: typeof frontmatter.name === "string" ? frontmatter.name : file.basename,
       level:
         typeof frontmatter.level === "string" ||
-        typeof frontmatter.level === "number"
+          typeof frontmatter.level === "number"
           ? String(frontmatter.level)
           : "",
       alignment:

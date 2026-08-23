@@ -1,8 +1,9 @@
 import { parseYaml } from "obsidian";
-import { ParseResult, ShadowdarkMonster } from "../types";
+import { ParseResult, ShadowdarkEntity, ShadowdarkMonster, ShadowdarkPlayer } from "../types";
 import { normalizeMonster } from "./normalizeMonster";
+import { normalizePlayer } from "./normalizePlayer";
 
-export function parseCodeBlock(source: string): ParseResult<ShadowdarkMonster> {
+export function parseCodeBlock(source: string): ParseResult<ShadowdarkEntity> {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -17,27 +18,32 @@ export function parseCodeBlock(source: string): ParseResult<ShadowdarkMonster> {
       };
     }
 
-    const monster = normalizeMonster(parsed as Partial<ShadowdarkMonster>);
+    let entity: ShadowdarkEntity
+    if (parsed.shadowdarkType === "monster") {
+      entity = normalizeMonster(parsed as Partial<ShadowdarkMonster>);
+    } else {
+      entity = normalizePlayer(parsed as Partial<ShadowdarkPlayer>);
+    }
 
-    if (!monster.name || monster.name === "Unnamed Monster") {
+    if (!entity.name || entity.name === "Unnamed Monster") {
       warnings.push("Monster is missing a name.");
     }
 
-    if (!monster.ac || monster.ac === "?") {
+    if (!entity.ac || entity.ac === "?") {
       warnings.push("Monster is missing AC.");
     }
 
-    if (!monster.hp || monster.hp === "?") {
+    if (!entity.hp || entity.hp === "?") {
       warnings.push("Monster is missing HP.");
     }
 
-    if (monster.atk.length === 0) {
+    if (entity.atk.length === 0) {
       warnings.push("Monster has no attacks listed.");
     }
 
     return {
       success: true,
-      data: monster,
+      data: entity,
       errors,
       warnings
     };

@@ -1,4 +1,4 @@
-.sd-monster-card {
+.sd-card {
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   padding: 1rem;
@@ -7,89 +7,89 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.sd-monster-card.is-compact {
+.sd-card.is-compact {
   padding: 0.55rem;
   margin: 0.5rem 0;
 }
 
-.sd-monster-card.is-compact .sd-monster-header {
+.sd-card.is-compact .sd-header {
   margin-bottom: 0.45rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-name {
+.sd-card.is-compact .sd-name {
   font-size: 1.05rem;
   line-height: 1.1;
 }
 
-.sd-monster-card.is-compact .sd-monster-meta {
+.sd-card.is-compact .sd-meta {
   margin-top: 0.1rem;
   font-size: 0.82rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-core {
+.sd-card.is-compact .sd-core {
   gap: 0.3rem;
   margin-bottom: 0.5rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-core-item {
+.sd-card.is-compact .sd-core-item {
   padding: 0.15rem 0.35rem;
   font-size: 0.82rem;
   border-radius: 5px;
 }
 
-.sd-monster-card.is-compact .sd-monster-section {
+.sd-card.is-compact .sd-section {
   margin-top: 0.5rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-section-title {
+.sd-card.is-compact .sd-section-title {
   font-size: 0.72rem;
   margin-bottom: 0.15rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-attacks,
-.sd-monster-card.is-compact .sd-monster-list {
+.sd-card.is-compact .sd-attacks,
+.sd-card.is-compact .sd-list {
   padding-left: 1rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-attack {
+.sd-card.is-compact .sd-attack {
   margin: 0.02rem 0;
 }
 
-.sd-monster-card.is-compact .sd-monster-abilities {
+.sd-card.is-compact .sd-abilities {
   gap: 0.2rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-ability {
+.sd-card.is-compact .sd-ability {
   padding: 0.2rem 0.3rem;
   font-size: 0.82rem;
   border-radius: 5px;
 }
 
-.sd-monster-card.is-compact .sd-monster-description {
+.sd-card.is-compact .sd-description {
   line-height: 1.25;
   font-size: 0.92rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-footer {
+.sd-card.is-compact .sd-footer {
   margin-top: 0.5rem;
   font-size: 0.8rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-tags {
+.sd-card.is-compact .sd-tags {
   gap: 0.2rem;
   margin-top: 0.45rem;
 }
 
-.sd-monster-card.is-compact .sd-monster-tag {
+.sd-card.is-compact .sd-tag {
   font-size: 0.68rem;
   padding: 0.1rem 0.3rem;
 }
 
-.sd-monster-header {
+.sd-header {
   margin-bottom: 0.75rem;
 }
 
-.sd-monster-name {
+.sd-name {
   font-size: 1.3rem;
   font-weight: 800;
   letter-spacing: 0.03em;
@@ -97,20 +97,20 @@
   text-transform: uppercase;
 }
 
-.sd-monster-meta {
+.sd-meta {
   margin-top: 0.2rem;
   color: var(--text-muted);
   font-size: 0.95rem;
 }
 
-.sd-monster-core {
+.sd-core {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.9rem;
 }
 
-.sd-monster-core-item {
+.sd-core-item {
   padding: 0.25rem 0.5rem;
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
@@ -118,11 +118,11 @@
   background: var(--background-secondary);
 }
 
-.sd-monster-section {
+.sd-section {
   margin-top: 0.85rem;
 }
 
-.sd-monster-section-title {
+.sd-section-title {
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -130,17 +130,17 @@
   color: var(--text-muted);
 }
 
-.sd-monster-attacks,
-.sd-monster-list {
+.sd-attacks,
+.sd-list {
   margin: 0;
   padding-left: 1.2rem;
 }
 
-.sd-monster-attack {
+.sd-attack {
   margin: 0.15rem 0;
 }
 
-.sd-monster-attack-connector {
+.sd-attack-connector {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -148,17 +148,17 @@
   font-size: 0.9em;
 }
 
-.sd-monster-attack-text {
+.sd-attack-text {
   font-weight: 500;
 }
 
-.sd-monster-abilities {
+.sd-abilities {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.4rem;
 }
 
-.sd-monster-ability {
+.sd-ability {
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
   padding: 0.35rem 0.45rem;
@@ -167,33 +167,33 @@
   background: var(--background-secondary);
 }
 
-.sd-monster-ability-label {
+.sd-ability-label {
   color: var(--text-muted);
   font-weight: 700;
 }
 
-.sd-monster-ability-text {
+.sd-ability-text {
   font-weight: 500;
 }
 
-.sd-monster-description {
+.sd-description {
   line-height: 1.45;
 }
 
-.sd-monster-footer {
+.sd-footer {
   margin-top: 0.9rem;
   color: var(--text-muted);
   font-size: 0.9rem;
 }
 
-.sd-monster-tags {
+.sd-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   margin-top: 0.75rem;
 }
 
-.sd-monster-tag {
+.sd-tag {
   font-size: 0.78rem;
   padding: 0.2rem 0.45rem;
   border-radius: 999px;
@@ -201,19 +201,19 @@
   border: 1px solid var(--background-modifier-border);
 }
 
-.sd-monster-warning-box {
+.sd-warning-box {
   margin-top: 0.9rem;
   padding: 0.65rem 0.75rem;
   border-left: 3px solid var(--color-orange);
   background: var(--background-secondary);
 }
 
-.sd-monster-warning {
+.sd-warning {
   color: var(--text-warning);
   font-size: 0.9rem;
 }
 
-.sd-monster-error-box {
+.sd-error-box {
   margin: 0.75rem 0;
   padding: 0.75rem;
   border-left: 3px solid var(--color-red);
@@ -221,26 +221,26 @@
   border-radius: 4px;
 }
 
-.sd-monster-error-title {
+.sd-error-title {
   font-weight: 700;
   margin-bottom: 0.4rem;
 }
 
-.sd-monster-error {
+.sd-error {
   color: var(--text-error);
   font-size: 0.92rem;
 }
 
-.sd-monster-frontmatter-wrapper {
+.sd-frontmatter-wrapper {
   margin: 0 0 1rem 0;
 }
 
-.markdown-reading-view .sd-monster-frontmatter-wrapper {
+.markdown-reading-view .sd-frontmatter-wrapper {
   position: relative;
   z-index: 1;
 }
 
-.metadata-container.sd-monster-hide-properties {
+.metadata-container.sd-hide-properties {
   display: none;
 }
 
@@ -430,29 +430,29 @@
 }
 
 @media (max-width: 700px) {
-  .sd-monster-abilities {
+  .sd-abilities {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.sd-monster-hover-host {
+.sd-hover-host {
   margin: 0;
   padding: 0;
   background: transparent;
   border: none;
 }
 
-.sd-monster-hover-wrapper {
+.sd-hover-wrapper {
   margin: 0 0 0.75rem 0;
 }
 
-.popover .sd-monster-hover-wrapper {
+.popover .sd-hover-wrapper {
   max-height: none;
   overflow: visible;
   margin-bottom: 0.5rem;
 }
 
-.sd-monster-hover-host .sd-monster-card {
+.sd-hover-host .sd-card {
   box-shadow: none;
   border: 1px solid var(--background-modifier-border);
 }
@@ -466,7 +466,7 @@
 
 /* Browser modal options */
 
-.sd-monster-browser-modal {
+.sd-browser-modal {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -475,14 +475,14 @@
   min-height: 0;
 }
 
-.sd-monster-browser-controls {
+.sd-browser-controls {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem 1rem;
   flex: 0 0 auto;
 }
 
-.sd-monster-browser-filter {
+.sd-browser-filter {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
@@ -494,25 +494,25 @@
   box-sizing: border-box;
 }
 
-.sd-monster-browser-filter-label {
+.sd-browser-filter-label {
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.2;
   color: var(--text-normal);
 }
 
-.sd-monster-browser-filters-toggle {
+.sd-browser-filters-toggle {
   display: none;
 }
 
 @media (max-width: 700px) {
-  .sd-monster-browser-filters-shell {
+  .sd-browser-filters-shell {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
   }
 
-  .sd-monster-browser-filters-toggle {
+  .sd-browser-filters-toggle {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -527,44 +527,44 @@
     cursor: pointer;
   }
 
-  .sd-monster-browser-filters-toggle::after {
+  .sd-browser-filters-toggle::after {
     content: "▾";
   }
 
-  .sd-monster-browser-filters-toggle.is-open::after {
+  .sd-browser-filters-toggle.is-open::after {
     content: "▴";
   }
 
-  .sd-monster-browser-controls.is-collapsed-mobile,
-  .sd-monster-browser-actions.is-collapsed-mobile {
+  .sd-browser-controls.is-collapsed-mobile,
+  .sd-browser-actions.is-collapsed-mobile {
     display: none;
   }
 }
 
-.sd-monster-browser-input,
-.sd-monster-browser-select {
+.sd-browser-input,
+.sd-browser-select {
   width: 100%;
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
 }
 
-.sd-monster-browser-actions {
+.sd-browser-actions {
   display: flex;
   justify-content: flex-end;
   flex: 0 0 auto;
 }
 
-.sd-monster-browser-modal-shell {
+.sd-browser-modal-shell {
   width: min(920px, 92vw);
   max-width: 92vw;
 }
 
-.sd-monster-browser-clear-button {
+.sd-browser-clear-button {
   white-space: nowrap;
 }
 
-.sd-monster-browser-results {
+.sd-browser-results {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -573,12 +573,12 @@
   gap: 0.5rem;
 }
 
-.sd-monster-browser-summary {
+.sd-browser-summary {
   color: var(--text-muted);
   font-size: 0.9rem;
 }
 
-.sd-monster-browser-row {
+.sd-browser-row {
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   padding: 0.75rem;
@@ -586,29 +586,29 @@
   background: var(--background-primary);
 }
 
-.sd-monster-browser-row:hover {
+.sd-browser-row:hover {
   background: var(--background-secondary);
 }
 
-.sd-monster-browser-name {
+.sd-browser-name {
   font-weight: 700;
   font-size: 1rem;
 }
 
-.sd-monster-browser-meta {
+.sd-browser-meta {
   color: var(--text-muted);
   font-size: 0.9rem;
   margin-top: 0.2rem;
 }
 
-.sd-monster-browser-tags {
+.sd-browser-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   margin-top: 0.5rem;
 }
 
-.sd-monster-browser-tag {
+.sd-browser-tag {
   font-size: 0.75rem;
   padding: 0.15rem 0.4rem;
   border-radius: 999px;
@@ -616,18 +616,18 @@
   border: 1px solid var(--background-modifier-border);
 }
 
-.sd-monster-browser-empty {
+.sd-browser-empty {
   color: var(--text-muted);
   padding: 1rem 0;
 }
 
 @media (max-width: 700px) {
-  .sd-monster-browser-controls {
+  .sd-browser-controls {
     grid-template-columns: 1fr;
   }
 }
 
-.sd-monster-browser-hover-card {
+.sd-browser-hover-card {
   position: fixed;
   width: min(420px, 42vw);
   max-height: 70vh;
@@ -640,7 +640,7 @@
   transition: opacity 80ms ease, transform 80ms ease;
 }
 
-.sd-monster-browser-hover-card-inner {
+.sd-browser-hover-card-inner {
   border: 1px solid var(--background-modifier-border);
   border-radius: 10px;
   background: var(--background-primary);
@@ -648,29 +648,29 @@
   padding: 0.5rem;
 }
 
-.sd-monster-browser-hover-card.is-visible {
+.sd-browser-hover-card.is-visible {
   display: block;
   opacity: 1;
   transform: translateY(0);
 }
 
-.sd-monster-embed-host {
+.sd-embed-host {
   margin: 0;
   padding: 0;
   background: transparent;
   border: none;
 }
 
-.sd-monster-embed-wrapper {
+.sd-embed-wrapper {
   margin: 0 0 0.75rem 0;
 }
 
-.internal-embed[data-sd-monster-embed="true"] .markdown-embed-link,
-.markdown-embed[data-sd-monster-embed="true"] .markdown-embed-link {
+.internal-embed[data-sd-embed="true"] .markdown-embed-link,
+.markdown-embed[data-sd-embed="true"] .markdown-embed-link {
   display: none;
 }
 
-.sd-monster-dice-button {
+.sd-dice-button {
   background: transparent;
   border: none;
   padding: 6px;
@@ -681,6 +681,6 @@
   text-decoration: underline;
 }
 
-.sd-monster-dice-button:hover {
+.sd-dice-button:hover {
   opacity: 0.85;
 }
