@@ -1096,24 +1096,24 @@ function renderPlayerBlock(container, player, settings, warnings = [], options =
   const lore = createDiv("sd-meta");
   const loreParts = [];
   if (player.ancestry) {
-    loreParts.push(createSpan(void 0, player.ancestry));
+    loreParts.push(createSpan(void 0, `Ancestry: ${player.ancestry}`));
   }
   if (player.class) {
-    loreParts.push(createSpan(void 0, player.class));
+    loreParts.push(createSpan(void 0, `Class: ${player.class}`));
   }
   if (player.title) {
-    loreParts.push(createSpan(void 0, player.title));
+    loreParts.push(createSpan(void 0, `Title: ${player.title}`));
   }
   if (player.background) {
-    loreParts.push(createSpan(void 0, player.background));
+    loreParts.push(createSpan(void 0, `Background: ${player.background}`));
   }
   if (player.deity) {
-    loreParts.push(createSpan(void 0, `following ${player.deity}`));
+    loreParts.push(createSpan(void 0, `Deity: ${player.deity}`));
   }
   loreParts.forEach((part, index) => {
     lore.appendChild(part);
     if (index < loreParts.length - 1) {
-      lore.appendChild(createSpan(void 0, ", "));
+      lore.appendChild(createSpan(void 0, " \u2022 "));
     }
   });
   header.appendChild(lore);
@@ -2544,7 +2544,7 @@ var EntityBrowserModal = class extends import_obsidian6.Modal {
 };
 
 // src/templates/playerTemplate.ts
-function buildPlayerNote(name = "New Player") {
+function buildPlayerTemplate(name = "New Player") {
   return `---
 shadowdarkType: player
 name: ${name}
@@ -2959,7 +2959,7 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     await this.ensureFolderExists(folderPath);
     const baseName = `New ${type}`;
     const filePath = this.getUniqueFilePath(folderPath, `${baseName}.md`);
-    const content = type === "monster" ? buildMonsterTemplate(baseName) : buildPlayerNote(baseName);
+    const content = type === "monster" ? buildMonsterTemplate(baseName) : buildPlayerTemplate(baseName);
     const file = await this.app.vault.create(filePath, content);
     await this.app.workspace.getLeaf(true).openFile(file);
     new import_obsidian8.Notice(`Created ${type} note: ${file.basename}`);

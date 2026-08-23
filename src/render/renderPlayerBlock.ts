@@ -56,30 +56,30 @@ export function renderPlayerBlock(
   const loreParts: HTMLElement[] = [];
 
   if (player.ancestry) {
-    loreParts.push(createSpan(undefined, player.ancestry))
+    loreParts.push(createSpan(undefined, `Ancestry: ${player.ancestry}`))
   }
 
   if (player.class) {
-    loreParts.push(createSpan(undefined, player.class))
+    loreParts.push(createSpan(undefined, `Class: ${player.class}`))
   }
 
   if (player.title) {
-    loreParts.push(createSpan(undefined, player.title))
+    loreParts.push(createSpan(undefined, `Title: ${player.title}`))
   }
 
   if (player.background) {
-    loreParts.push(createSpan(undefined, player.background))
+    loreParts.push(createSpan(undefined, `Background: ${player.background}`))
   }
 
   if (player.deity) {
-    loreParts.push(createSpan(undefined, `following ${player.deity}`))
+    loreParts.push(createSpan(undefined, `Deity: ${player.deity}`))
   }
 
   loreParts.forEach((part, index) => {
     lore.appendChild(part);
 
     if (index < loreParts.length - 1) {
-      lore.appendChild(createSpan(undefined, ", "));
+      lore.appendChild(createSpan(undefined, " • "));
     }
   });
   header.appendChild(lore)
