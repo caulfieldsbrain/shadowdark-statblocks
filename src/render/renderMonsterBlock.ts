@@ -195,6 +195,36 @@ function appendTextWithDamageDiceButtons(
   }
 }
 
+function createAbilityTile(
+  ability: string,
+  modifier: string,
+  settings: ShadowdarkStatblocksSettings,
+  options: MonsterRenderOptions
+): HTMLElement {
+  const text = `${ability} ${modifier}`;
+
+  if (!settings.enableDiceRollerIntegration || !options.onRollDice) {
+    return createDiv("sd-monster-ability", text);
+  }
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "sd-monster-ability sd-monster-ability-roll";
+  button.textContent = text;
+
+  const formula = attackBonusToFormula(modifier);
+
+  button.title = `Roll ${ability} check (${formula})`;
+
+  button.addEventListener("click", (evt) => {
+    evt.preventDefault();
+    evt.stopPropagation();
+    options.onRollDice?.(formula);
+  });
+
+  return button;
+}
+
 function appendRenderedAttack(
   li: HTMLLIElement,
   attackText: string,
@@ -405,12 +435,24 @@ export function renderMonsterBlock(
   abilities.appendChild(createDiv("sd-monster-section-title", "ABILITIES"));
 
   const grid = createDiv("sd-monster-abilities");
-  grid.appendChild(createDiv("sd-monster-ability", `STR ${monster.stats.str}`));
-  grid.appendChild(createDiv("sd-monster-ability", `DEX ${monster.stats.dex}`));
-  grid.appendChild(createDiv("sd-monster-ability", `CON ${monster.stats.con}`));
-  grid.appendChild(createDiv("sd-monster-ability", `INT ${monster.stats.int}`));
-  grid.appendChild(createDiv("sd-monster-ability", `WIS ${monster.stats.wis}`));
-  grid.appendChild(createDiv("sd-monster-ability", `CHA ${monster.stats.cha}`));
+  grid.appendChild(
+    createAbilityTile("STR", monster.stats.str, settings, options)
+  );
+  grid.appendChild(
+    createAbilityTile("DEX", monster.stats.dex, settings, options)
+  );
+  grid.appendChild(
+    createAbilityTile("CON", monster.stats.con, settings, options)
+  );
+  grid.appendChild(
+    createAbilityTile("INT", monster.stats.int, settings, options)
+  );
+  grid.appendChild(
+    createAbilityTile("WIS", monster.stats.wis, settings, options)
+  );
+  grid.appendChild(
+    createAbilityTile("CHA", monster.stats.cha, settings, options)
+  );
 
   abilities.appendChild(grid);
   card.appendChild(abilities);

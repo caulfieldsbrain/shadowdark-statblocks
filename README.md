@@ -86,6 +86,7 @@ When enabled:
 - Attack bonuses become clickable
 - Damage rolls become clickable
 - Spell and special ability dice rolls become clickable
+- Ability score checks become clickable
 
 Requirements:
 - Install and enable the Dice Roller plugin

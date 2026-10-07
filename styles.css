@@ -167,6 +167,20 @@
   background: var(--background-secondary);
 }
 
+.sd-monster-ability-roll {
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+  appearance: none;
+}
+
+.sd-monster-ability-roll:hover {
+  background: var(--background-modifier-hover);
+}
+
 .sd-monster-ability-label {
   color: var(--text-muted);
   font-weight: 700;

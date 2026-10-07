@@ -1,6 +1,6 @@
 {
   "name": "shadowdark-statblocks",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "Create, import, and render Shadowdark monster stat blocks.",
   "main": "main.js",
   "scripts": {
