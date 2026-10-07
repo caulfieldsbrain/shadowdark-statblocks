@@ -30,17 +30,15 @@ export class DuplicateMonsterModal extends Modal {
     titleEl.setText("Duplicate monster note");
     contentEl.empty();
 
-    const message = document.createElement("p");
+    const message = contentEl.createEl("p");
     message.textContent = this.canOverwrite
       ? `A Shadowdark monster note named "${this.existingFileName}" already exists.`
       : `A file named "${this.existingFileName}" already exists, but it is not a Shadowdark monster note.`;
-    contentEl.appendChild(message);
 
-    const subMessage = document.createElement("p");
+    const subMessage = contentEl.createEl("p");
     subMessage.textContent = this.canOverwrite
       ? "Choose whether to update the existing note, create a copy, or cancel."
       : "To avoid overwriting a non-monster note, you can create a copy or cancel.";
-    contentEl.appendChild(subMessage);
 
     new Setting(contentEl)
       .addButton((button) => {

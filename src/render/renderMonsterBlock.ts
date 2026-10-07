@@ -6,27 +6,27 @@ type MonsterRenderOptions = {
 };
 
 function createDiv(className?: string, text?: string): HTMLDivElement {
-  const el = document.createElement("div");
+  const el = createEl("div");
   if (className) el.className = className;
   if (text !== undefined) el.textContent = text;
   return el;
 }
 
 function createSpan(className?: string, text?: string): HTMLSpanElement {
-  const el = document.createElement("span");
+  const el = createEl("span");
   if (className) el.className = className;
   if (text !== undefined) el.textContent = text;
   return el;
 }
 
 function createList(className?: string): HTMLUListElement {
-  const el = document.createElement("ul");
+  const el = createEl("ul");
   if (className) el.className = className;
   return el;
 }
 
 function createListItem(className?: string): HTMLLIElement {
-  const el = document.createElement("li");
+  const el = createEl("li");
   if (className) el.className = className;
   return el;
 }
@@ -87,8 +87,7 @@ function createDiceRollButton(
   formula: string,
   onRollDice: (formula: string) => void
 ): HTMLButtonElement {
-  const button = document.createElement("button");
-  button.type = "button";
+  const button = createEl("button");  button.type = "button";
   button.className = "sd-monster-dice-button";
   button.textContent = text;
   button.title = `Roll ${formula}`;
@@ -207,7 +206,7 @@ function createAbilityTile(
     return createDiv("sd-monster-ability", text);
   }
 
-  const button = document.createElement("button");
+  const button = createEl("button");
   button.type = "button";
   button.className = "sd-monster-ability sd-monster-ability-roll";
   button.textContent = text;

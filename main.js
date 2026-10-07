@@ -26,12 +26,17 @@ var import_obsidian8 = require("obsidian");
 
 // src/services/monsterIndexService.ts
 var import_obsidian = require("obsidian");
+function isRecord(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 function extractFrontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return null;
   try {
     const parsed = (0, import_obsidian.parseYaml)(match[1]);
-    if (!parsed || typeof parsed !== "object") return null;
+    if (!isRecord(parsed)) {
+      return null;
+    }
     return parsed;
   } catch (error) {
     console.error("Shadowdark Statblocks frontmatter parse error:", error);
@@ -220,12 +225,15 @@ function normalizeMonster(input) {
 }
 
 // src/parsing/parseCodeBlock.ts
+function isRecord2(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 function parseCodeBlock(source) {
   const errors = [];
   const warnings = [];
   try {
     const parsed = (0, import_obsidian2.parseYaml)(source);
-    if (!parsed || typeof parsed !== "object") {
+    if (!isRecord2(parsed)) {
       return {
         success: false,
         errors: ["Code block did not contain a valid YAML object."],
@@ -580,24 +588,24 @@ function parseRawShadowdarkText(source) {
 
 // src/render/renderMonsterBlock.ts
 function createDiv(className, text) {
-  const el = document.createElement("div");
+  const el = createEl("div");
   if (className) el.className = className;
   if (text !== void 0) el.textContent = text;
   return el;
 }
 function createSpan(className, text) {
-  const el = document.createElement("span");
+  const el = createEl("span");
   if (className) el.className = className;
   if (text !== void 0) el.textContent = text;
   return el;
 }
 function createList(className) {
-  const el = document.createElement("ul");
+  const el = createEl("ul");
   if (className) el.className = className;
   return el;
 }
 function createListItem(className) {
-  const el = document.createElement("li");
+  const el = createEl("li");
   if (className) el.className = className;
   return el;
 }
@@ -642,7 +650,7 @@ function attackBonusToFormula(bonus) {
   return `1d20${normalized}`;
 }
 function createDiceRollButton(text, formula, onRollDice) {
-  const button = document.createElement("button");
+  const button = createEl("button");
   button.type = "button";
   button.className = "sd-monster-dice-button";
   button.textContent = text;
@@ -721,7 +729,7 @@ function createAbilityTile(ability, modifier, settings, options) {
   if (!settings.enableDiceRollerIntegration || !options.onRollDice) {
     return createDiv("sd-monster-ability", text);
   }
-  const button = document.createElement("button");
+  const button = createEl("button");
   button.type = "button";
   button.className = "sd-monster-ability sd-monster-ability-roll";
   button.textContent = text;
@@ -1033,10 +1041,127 @@ var ShadowdarkStatblocksSettingTab = class extends import_obsidian3.PluginSettin
     super(app, plugin);
     this.plugin = plugin;
   }
+  async setControlValue(key, value) {
+    let shouldRefresh = false;
+    switch (key) {
+      case "compactMode":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.compactMode = value;
+        shouldRefresh = true;
+        break;
+      case "showSource":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.showSource = value;
+        shouldRefresh = true;
+        break;
+      case "showTags":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.showTags = value;
+        shouldRefresh = true;
+        break;
+      case "renderFrontmatterMonsters":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.renderFrontmatterMonsters = value;
+        shouldRefresh = true;
+        break;
+      case "enableDiceRollerIntegration":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.enableDiceRollerIntegration = value;
+        shouldRefresh = true;
+        break;
+      case "hideMonsterProperties":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.hideMonsterProperties = value;
+        shouldRefresh = true;
+        break;
+      case "monsterFolder":
+        if (typeof value !== "string") return;
+        this.plugin.settings.monsterFolder = value.trim() || "Shadowdark/Monsters";
+        break;
+      default:
+        return;
+    }
+    await this.plugin.savePluginSettings();
+    if (shouldRefresh) {
+      await this.plugin.refreshMonsterView();
+    }
+  }
+  getSettingDefinitions() {
+    return [
+      {
+        type: "group",
+        heading: "Display",
+        items: [
+          {
+            name: "Compact statblock mode",
+            desc: "Render monster statblocks with tighter spacing.",
+            control: {
+              type: "toggle",
+              key: "compactMode"
+            }
+          },
+          {
+            name: "Show source",
+            desc: "Display the source field in rendered statblocks.",
+            control: {
+              type: "toggle",
+              key: "showSource"
+            }
+          },
+          {
+            name: "Show tags",
+            desc: "Display tag pills in rendered statblocks.",
+            control: {
+              type: "toggle",
+              key: "showTags"
+            }
+          },
+          {
+            name: "Render frontmatter monsters",
+            desc: "Render statblocks from monster note frontmatter in reading view.",
+            control: {
+              type: "toggle",
+              key: "renderFrontmatterMonsters"
+            }
+          },
+          {
+            name: "Enable Dice Roller integration",
+            desc: "Make compatible attack, damage, and ability rolls clickable using Dice Roller.",
+            control: {
+              type: "toggle",
+              key: "enableDiceRollerIntegration"
+            }
+          },
+          {
+            name: "Hide monster properties",
+            desc: "Hide Obsidian's native properties section in reading view for monster notes.",
+            control: {
+              type: "toggle",
+              key: "hideMonsterProperties"
+            }
+          }
+        ]
+      },
+      {
+        type: "group",
+        heading: "Files",
+        items: [
+          {
+            name: "Monster folder",
+            desc: "Folder used when creating new monster notes.",
+            control: {
+              type: "text",
+              key: "monsterFolder",
+              placeholder: "Shadowdark/Monsters"
+            }
+          }
+        ]
+      }
+    ];
+  }
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian3.Setting(containerEl).setName("Shadowdark statblocks settings").setHeading();
     new import_obsidian3.Setting(containerEl).setName("Display").setHeading();
     new import_obsidian3.Setting(containerEl).setName("Compact statblock mode").setDesc("Render monster statblocks with tighter spacing.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.compactMode).onChange(async (value) => {
@@ -1352,7 +1477,7 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
     this.refreshOtherSourceSuggestions();
   }
   refreshTagSuggestions() {
-    if (!this.tagSuggestionsEl || !this.tagsInput) return;
+    if (!this.tagSuggestionsEl || this.tagsInput === void 0) return;
     this.tagSuggestionsEl.innerHTML = "";
     const rawValue = this.tagsInput.getValue();
     this.filteredTagSuggestions = this.getMatchingTagSuggestions(rawValue);
@@ -1365,20 +1490,22 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
     } else if (this.highlightedTagSuggestionIndex >= this.filteredTagSuggestions.length) {
       this.highlightedTagSuggestionIndex = this.filteredTagSuggestions.length - 1;
     }
-    const label = document.createElement("div");
-    label.className = "sd-tag-suggestions-label";
-    label.textContent = "Matching tags";
-    this.tagSuggestionsEl.appendChild(label);
-    const chips = document.createElement("div");
-    chips.className = "sd-tag-suggestions-chips";
+    this.tagSuggestionsEl.createDiv({
+      cls: "sd-tag-suggestions-label",
+      text: "Matching tags"
+    });
+    const chips = this.tagSuggestionsEl.createDiv({
+      cls: "sd-tag-suggestions-chips"
+    });
     this.filteredTagSuggestions.forEach((tag, index) => {
-      const chip = document.createElement("button");
+      const chip = chips.createEl("button", {
+        cls: "sd-tag-suggestion-chip",
+        text: tag
+      });
       chip.type = "button";
-      chip.className = "sd-tag-suggestion-chip";
       if (index === this.highlightedTagSuggestionIndex) {
         chip.classList.add("is-active");
       }
-      chip.textContent = tag;
       chip.addEventListener("click", () => {
         const updatedValue = replaceCurrentTagFragment(rawValue, tag);
         this.monster.tags = splitTags(updatedValue);
@@ -1387,13 +1514,13 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
         this.refreshTagSuggestions();
         this.refreshPreview();
       });
-      chips.appendChild(chip);
     });
-    this.tagSuggestionsEl.appendChild(chips);
   }
   refreshOtherSourceSuggestions() {
     var _a;
-    if (!this.otherSourceSuggestionsEl || !this.otherSourceInput) return;
+    if (!this.otherSourceSuggestionsEl || this.otherSourceInput === void 0) {
+      return;
+    }
     this.otherSourceSuggestionsEl.innerHTML = "";
     if (((_a = this.sourceDropdown) == null ? void 0 : _a.getValue()) !== "Other") {
       this.filteredOtherSourceSuggestions = [];
@@ -1404,10 +1531,10 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
     this.filteredOtherSourceSuggestions = this.getMatchingOtherSourceSuggestions(rawValue);
     if (this.filteredOtherSourceSuggestions.length === 0) {
       this.highlightedOtherSourceSuggestionIndex = -1;
-      const empty = document.createElement("div");
-      empty.className = "sd-tag-suggestions-empty";
-      empty.textContent = "No matching sources";
-      this.otherSourceSuggestionsEl.appendChild(empty);
+      this.otherSourceSuggestionsEl.createDiv({
+        cls: "sd-tag-suggestions-empty",
+        text: "No matching sources"
+      });
       return;
     }
     if (this.highlightedOtherSourceSuggestionIndex < 0) {
@@ -1415,20 +1542,22 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
     } else if (this.highlightedOtherSourceSuggestionIndex >= this.filteredOtherSourceSuggestions.length) {
       this.highlightedOtherSourceSuggestionIndex = this.filteredOtherSourceSuggestions.length - 1;
     }
-    const label = document.createElement("div");
-    label.className = "sd-tag-suggestions-label";
-    label.textContent = "Matching sources";
-    this.otherSourceSuggestionsEl.appendChild(label);
-    const chips = document.createElement("div");
-    chips.className = "sd-tag-suggestions-chips";
+    this.otherSourceSuggestionsEl.createDiv({
+      cls: "sd-tag-suggestions-label",
+      text: "Matching sources"
+    });
+    const chips = this.otherSourceSuggestionsEl.createDiv({
+      cls: "sd-tag-suggestions-chips"
+    });
     this.filteredOtherSourceSuggestions.forEach((source, index) => {
-      const chip = document.createElement("button");
+      const chip = chips.createEl("button", {
+        cls: "sd-tag-suggestion-chip",
+        text: source
+      });
       chip.type = "button";
-      chip.className = "sd-tag-suggestion-chip";
       if (index === this.highlightedOtherSourceSuggestionIndex) {
         chip.classList.add("is-active");
       }
-      chip.textContent = source;
       chip.addEventListener("click", () => {
         this.monster.source = source;
         this.otherSourceInput.setValue(source);
@@ -1436,9 +1565,7 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
         this.refreshOtherSourceSuggestions();
         this.refreshPreview();
       });
-      chips.appendChild(chip);
     });
-    this.otherSourceSuggestionsEl.appendChild(chips);
   }
   moveTagSuggestionSelection(direction) {
     if (this.filteredTagSuggestions.length === 0) return;
@@ -1450,7 +1577,7 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
     this.refreshTagSuggestions();
   }
   applyHighlightedTagSuggestion() {
-    if (this.highlightedTagSuggestionIndex < 0 || this.highlightedTagSuggestionIndex >= this.filteredTagSuggestions.length || !this.tagsInput) {
+    if (this.highlightedTagSuggestionIndex < 0 || this.highlightedTagSuggestionIndex >= this.filteredTagSuggestions.length || !this.tagsInput === void 0) {
       return;
     }
     const selectedTag = this.filteredTagSuggestions[this.highlightedTagSuggestionIndex];
@@ -1477,7 +1604,7 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
     this.refreshOtherSourceSuggestions();
   }
   applyHighlightedOtherSourceSuggestion() {
-    if (this.highlightedOtherSourceSuggestionIndex < 0 || this.highlightedOtherSourceSuggestionIndex >= this.filteredOtherSourceSuggestions.length || !this.otherSourceInput) {
+    if (this.highlightedOtherSourceSuggestionIndex < 0 || this.highlightedOtherSourceSuggestionIndex >= this.filteredOtherSourceSuggestions.length || !this.otherSourceInput === void 0) {
       return;
     }
     const selectedSource = this.filteredOtherSourceSuggestions[this.highlightedOtherSourceSuggestionIndex];
@@ -1538,46 +1665,45 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
     contentEl.empty();
     contentEl.addClass("sd-import-preview-modal");
     this.modalEl.addClass("sd-import-preview-modal-shell");
-    const intro = document.createElement("p");
-    intro.className = "sd-import-preview-description";
-    intro.textContent = this.mode === "edit" ? "Review and edit the monster, then update the note." : "Review and edit the imported monster before creating the note.";
-    contentEl.appendChild(intro);
+    contentEl.createEl("p", {
+      cls: "sd-import-preview-description",
+      text: this.mode === "edit" ? "Review and edit the monster, then update the note." : "Review and edit the imported monster before creating the note."
+    });
     if (this.progressLabel) {
-      const progressEl = document.createElement("div");
-      progressEl.className = "sd-import-preview-progress";
-      progressEl.textContent = this.progressLabel;
-      contentEl.appendChild(progressEl);
+      contentEl.createDiv({
+        cls: "sd-import-preview-progress",
+        text: this.progressLabel
+      });
     }
     if (this.warnings.length > 0) {
-      const warningBox = document.createElement("div");
-      warningBox.className = "sd-import-preview-warnings";
-      const warningTitle = document.createElement("h4");
-      warningTitle.textContent = "Warnings";
-      warningBox.appendChild(warningTitle);
-      const warningList = document.createElement("ul");
+      const warningBox = contentEl.createDiv({
+        cls: "sd-import-preview-warnings"
+      });
+      warningBox.createEl("h4", {
+        text: "Warnings"
+      });
+      const warningList = warningBox.createEl("ul");
       for (const warning of this.warnings) {
-        const li = document.createElement("li");
-        li.textContent = warning;
-        warningList.appendChild(li);
+        warningList.createEl("li", {
+          text: warning
+        });
       }
-      warningBox.appendChild(warningList);
-      contentEl.appendChild(warningBox);
     }
-    const layout = document.createElement("div");
-    layout.className = "sd-import-preview-layout";
-    contentEl.appendChild(layout);
-    const formCol = document.createElement("div");
-    formCol.className = "sd-import-preview-form";
-    layout.appendChild(formCol);
-    const previewCol = document.createElement("div");
-    previewCol.className = "sd-import-preview-panel";
-    layout.appendChild(previewCol);
-    const previewHeading = document.createElement("h3");
-    previewHeading.textContent = "Live preview";
-    previewCol.appendChild(previewHeading);
-    this.previewEl = document.createElement("div");
-    this.previewEl.className = "sd-import-preview-statblock";
-    previewCol.appendChild(this.previewEl);
+    const layout = contentEl.createDiv({
+      cls: "sd-import-preview-layout"
+    });
+    const formCol = layout.createDiv({
+      cls: "sd-import-preview-form"
+    });
+    const previewCol = layout.createDiv({
+      cls: "sd-import-preview-panel"
+    });
+    previewCol.createEl("h3", {
+      text: "Live preview"
+    });
+    this.previewEl = previewCol.createDiv({
+      cls: "sd-import-preview-statblock"
+    });
     formCol.createEl("h3", { text: "Core" });
     new import_obsidian4.Setting(formCol).setName("Name").addText((text) => {
       this.nameInput = text;
@@ -1658,9 +1784,9 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
       };
     });
     this.otherSourceSettingEl = otherSourceSetting.settingEl;
-    this.otherSourceSuggestionsEl = document.createElement("div");
-    this.otherSourceSuggestionsEl.className = "sd-tag-suggestions";
-    formCol.appendChild(this.otherSourceSuggestionsEl);
+    this.otherSourceSuggestionsEl = formCol.createDiv({
+      cls: "sd-tag-suggestions"
+    });
     new import_obsidian4.Setting(formCol).setName("Tags").setDesc("Comma-separated tags").addText((text) => {
       this.tagsInput = text;
       text.setValue(joinTags(this.monster.tags)).onChange((value) => {
@@ -1700,9 +1826,9 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
         return;
       };
     });
-    this.tagSuggestionsEl = document.createElement("div");
-    this.tagSuggestionsEl.className = "sd-tag-suggestions";
-    formCol.appendChild(this.tagSuggestionsEl);
+    this.tagSuggestionsEl = formCol.createDiv({
+      cls: "sd-tag-suggestions"
+    });
     formCol.createEl("h3", { text: "Stats" });
     new import_obsidian4.Setting(formCol).setName("Level").addText((text) => {
       this.levelInput = text;
@@ -1894,12 +2020,10 @@ var DuplicateMonsterModal = class extends import_obsidian5.Modal {
     const { contentEl, titleEl } = this;
     titleEl.setText("Duplicate monster note");
     contentEl.empty();
-    const message = document.createElement("p");
+    const message = contentEl.createEl("p");
     message.textContent = this.canOverwrite ? `A Shadowdark monster note named "${this.existingFileName}" already exists.` : `A file named "${this.existingFileName}" already exists, but it is not a Shadowdark monster note.`;
-    contentEl.appendChild(message);
-    const subMessage = document.createElement("p");
+    const subMessage = contentEl.createEl("p");
     subMessage.textContent = this.canOverwrite ? "Choose whether to update the existing note, create a copy, or cancel." : "To avoid overwriting a non-monster note, you can create a copy or cancel.";
-    contentEl.appendChild(subMessage);
     new import_obsidian5.Setting(contentEl).addButton((button) => {
       if (this.canOverwrite && this.onOverwriteCallback) {
         button.setButtonText("Update existing note").setCta().onClick(async () => {
@@ -2066,7 +2190,7 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
     titleEl.setText("Monster browser");
     contentEl.empty();
     contentEl.addClass("sd-monster-browser-modal");
-    this.allMonsters = await this.plugin.getAllMonsterIndexEntries();
+    this.allMonsters = this.plugin.getAllMonsterIndexEntries();
     this.filteredMonsters = [...this.allMonsters];
     const filtersShell = contentEl.createDiv({
       cls: "sd-monster-browser-filters-shell"
@@ -2316,35 +2440,37 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
           });
         }
       }
-      row.addEventListener("click", async () => {
-        await this.app.workspace.getLeaf(true).openFile(monster.file);
-        this.close();
+      row.addEventListener("click", () => {
+        void this.app.workspace.getLeaf(true).openFile(monster.file).then(() => {
+          this.close();
+        });
       });
       row.addEventListener("contextmenu", (evt) => {
         evt.preventDefault();
         const menu = new import_obsidian7.Menu();
         menu.addItem(
-          (item) => item.setTitle("Open").onClick(async () => {
-            await this.app.workspace.getLeaf(true).openFile(monster.file);
-            this.close();
+          (item) => item.setTitle("Open").onClick(() => {
+            void this.app.workspace.getLeaf(true).openFile(monster.file).then(() => {
+              this.close();
+            });
           })
         );
         menu.addItem(
-          (item) => item.setTitle("Open to the right").onClick(async () => {
+          (item) => item.setTitle("Open to the right").onClick(() => {
             const leaf = this.app.workspace.getLeaf("split", "vertical");
-            await leaf.openFile(monster.file);
+            void leaf.openFile(monster.file);
           })
         );
         menu.addItem(
-          (item) => item.setTitle("Copy link").onClick(async () => {
+          (item) => item.setTitle("Copy link").onClick(() => {
             const link = `[[${monster.file.basename}]]`;
-            await navigator.clipboard.writeText(link);
+            void navigator.clipboard.writeText(link);
           })
         );
         menu.addItem(
-          (item) => item.setTitle("Copy embed").onClick(async () => {
+          (item) => item.setTitle("Copy embed").onClick(() => {
             const embed = `![[${monster.file.basename}]]`;
-            await navigator.clipboard.writeText(embed);
+            void navigator.clipboard.writeText(embed);
           })
         );
         menu.showAtMouseEvent(evt);
@@ -2354,6 +2480,9 @@ var MonsterBrowserModal = class extends import_obsidian6.Modal {
 };
 
 // src/main.ts
+function isRecord3(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
   constructor() {
     super(...arguments);
@@ -2384,8 +2513,9 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     el.innerHTML = "";
     el.classList.remove("mod-frontmatter", "mod-ui", "el-pre");
     el.classList.add("sd-monster-embed-host");
-    const wrapper = document.createElement("div");
-    wrapper.className = "sd-monster-embed-wrapper";
+    const wrapper = el.createDiv({
+      cls: "sd-monster-embed-wrapper"
+    });
     wrapper.setAttribute("data-source-path", file.path);
     renderMonsterBlock(
       wrapper,
@@ -2394,7 +2524,6 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
       result.warnings,
       this.getMonsterRenderOptions()
     );
-    el.appendChild(wrapper);
   }
   getCachedMonsterParse(file, frontmatter) {
     const cached = this.parsedMonsterCache.get(file.path);
@@ -2427,13 +2556,21 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     return matches ? matches.length : 0;
   }
   rollWithDiceRoller(formula) {
-    var _a, _b;
     const cleaned = formula.trim();
     if (!cleaned) {
       return;
     }
-    const diceRollerPlugin = (_b = (_a = this.app.plugins) == null ? void 0 : _a.plugins) == null ? void 0 : _b["obsidian-dice-roller"];
-    if (!diceRollerPlugin) {
+    if (!("plugins" in this.app)) {
+      new import_obsidian8.Notice("Dice Roller plugin is not enabled.");
+      return;
+    }
+    const pluginManager = this.app.plugins;
+    if (!isRecord3(pluginManager)) {
+      new import_obsidian8.Notice("Dice Roller plugin is not enabled.");
+      return;
+    }
+    const enabledPlugins = pluginManager.plugins;
+    if (!isRecord3(enabledPlugins) || !("obsidian-dice-roller" in enabledPlugins)) {
       new import_obsidian8.Notice("Dice Roller plugin is not enabled.");
       return;
     }
@@ -2694,7 +2831,12 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     this.parsedMonsterCache.clear();
   }
   async loadPluginSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const savedData = await this.loadData();
+    this.settings = Object.assign(
+      {},
+      DEFAULT_SETTINGS,
+      isRecord3(savedData) ? savedData : {}
+    );
   }
   async savePluginSettings() {
     await this.saveData(this.settings);
@@ -3063,7 +3205,9 @@ var ShadowdarkStatblocksPlugin = class extends import_obsidian8.Plugin {
     if (!match) return null;
     try {
       const parsed = (0, import_obsidian8.parseYaml)(match[1]);
-      if (!parsed || typeof parsed !== "object") return null;
+      if (!isRecord3(parsed)) {
+        return null;
+      }
       return parsed;
     } catch (error) {
       console.error("Shadowdark Statblocks frontmatter parse error:", error);

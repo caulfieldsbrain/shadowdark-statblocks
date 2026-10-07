@@ -1,4 +1,9 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import {
+  App,
+  PluginSettingTab,
+  Setting,
+  type SettingDefinitionItem
+} from "obsidian";
 import ShadowdarkStatblocksPlugin from "./main";
 
 export class ShadowdarkStatblocksSettingTab extends PluginSettingTab {
@@ -9,13 +14,140 @@ export class ShadowdarkStatblocksSettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
+  async setControlValue(key: string, value: unknown): Promise<void> {
+    let shouldRefresh = false;
+
+    switch (key) {
+      case "compactMode":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.compactMode = value;
+        shouldRefresh = true;
+        break;
+
+      case "showSource":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.showSource = value;
+        shouldRefresh = true;
+        break;
+
+      case "showTags":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.showTags = value;
+        shouldRefresh = true;
+        break;
+
+      case "renderFrontmatterMonsters":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.renderFrontmatterMonsters = value;
+        shouldRefresh = true;
+        break;
+
+      case "enableDiceRollerIntegration":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.enableDiceRollerIntegration = value;
+        shouldRefresh = true;
+        break;
+
+      case "hideMonsterProperties":
+        if (typeof value !== "boolean") return;
+        this.plugin.settings.hideMonsterProperties = value;
+        shouldRefresh = true;
+        break;
+
+      case "monsterFolder":
+        if (typeof value !== "string") return;
+        this.plugin.settings.monsterFolder =
+          value.trim() || "Shadowdark/Monsters";
+        break;
+
+      default:
+        return;
+    }
+
+    await this.plugin.savePluginSettings();
+
+    if (shouldRefresh) {
+      await this.plugin.refreshMonsterView();
+    }
+  }
+
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    return [
+      {
+        type: "group",
+        heading: "Display",
+        items: [
+          {
+            name: "Compact statblock mode",
+            desc: "Render monster statblocks with tighter spacing.",
+            control: {
+              type: "toggle",
+              key: "compactMode"
+            }
+          },
+          {
+            name: "Show source",
+            desc: "Display the source field in rendered statblocks.",
+            control: {
+              type: "toggle",
+              key: "showSource"
+            }
+          },
+          {
+            name: "Show tags",
+            desc: "Display tag pills in rendered statblocks.",
+            control: {
+              type: "toggle",
+              key: "showTags"
+            }
+          },
+          {
+            name: "Render frontmatter monsters",
+            desc: "Render statblocks from monster note frontmatter in reading view.",
+            control: {
+              type: "toggle",
+              key: "renderFrontmatterMonsters"
+            }
+          },
+          {
+            name: "Enable Dice Roller integration",
+            desc: "Make compatible attack, damage, and ability rolls clickable using Dice Roller.",
+            control: {
+              type: "toggle",
+              key: "enableDiceRollerIntegration"
+            }
+          },
+          {
+            name: "Hide monster properties",
+            desc: "Hide Obsidian's native properties section in reading view for monster notes.",
+            control: {
+              type: "toggle",
+              key: "hideMonsterProperties"
+            }
+          }
+        ]
+      },
+      {
+        type: "group",
+        heading: "Files",
+        items: [
+          {
+            name: "Monster folder",
+            desc: "Folder used when creating new monster notes.",
+            control: {
+              type: "text",
+              key: "monsterFolder",
+              placeholder: "Shadowdark/Monsters"
+            }
+          }
+        ]
+      }
+    ];
+  }
+
   display(): void {
   const { containerEl } = this;
   containerEl.empty();
-
-  new Setting(containerEl)
-    .setName("Shadowdark statblocks settings")
-    .setHeading();
 
   // ===== DISPLAY SECTION =====
   

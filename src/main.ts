@@ -32,6 +32,14 @@ type CachedMonsterFrontmatterParse = {
   result: ReturnType<typeof parseFrontmatter>;
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value)
+  );
+}
+
 export default class ShadowdarkStatblocksPlugin extends Plugin {
   settings!: ShadowdarkStatblocksSettings;
   private renderGeneration = 0;
@@ -59,7 +67,7 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     if (!(file instanceof TFile)) return;
 
     const cache = this.app.metadataCache.getFileCache(file);
-    const frontmatter = cache?.frontmatter as Record<string, unknown> | undefined;
+    const frontmatter = cache?.frontmatter;
 
     if (!frontmatter || frontmatter.shadowdarkType !== "monster") {
       return;
@@ -73,8 +81,10 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     el.classList.remove("mod-frontmatter", "mod-ui", "el-pre");
     el.classList.add("sd-monster-embed-host");
 
-    const wrapper = document.createElement("div");
-    wrapper.className = "sd-monster-embed-wrapper";
+    const wrapper = el.createDiv({
+      cls: "sd-monster-embed-wrapper"
+    });
+
     wrapper.setAttribute("data-source-path", file.path);
 
     renderMonsterBlock(
@@ -84,7 +94,6 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
       result.warnings,
       this.getMonsterRenderOptions()
     );
-    el.appendChild(wrapper);
   }
 
   private getCachedMonsterParse(
@@ -139,9 +148,24 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
       return;
     }
 
-    const diceRollerPlugin = (this.app as any).plugins?.plugins?.["obsidian-dice-roller"];
+    if (!("plugins" in this.app)) {
+      new Notice("Dice Roller plugin is not enabled.");
+      return;
+    }
 
-    if (!diceRollerPlugin) {
+    const pluginManager = this.app.plugins;
+
+    if (!isRecord(pluginManager)) {
+      new Notice("Dice Roller plugin is not enabled.");
+      return;
+    }
+
+    const enabledPlugins = pluginManager.plugins;
+
+    if (
+      !isRecord(enabledPlugins) ||
+      !("obsidian-dice-roller" in enabledPlugins)
+    ) {
       new Notice("Dice Roller plugin is not enabled.");
       return;
     }
@@ -457,7 +481,13 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
   }
 
   async loadPluginSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const savedData: unknown = await this.loadData();
+
+    this.settings = Object.assign(
+      {},
+      DEFAULT_SETTINGS,
+      isRecord(savedData) ? savedData : {}
+    );
   }
 
   async savePluginSettings(): Promise<void> {
@@ -949,9 +979,13 @@ export default class ShadowdarkStatblocksPlugin extends Plugin {
     if (!match) return null;
 
     try {
-      const parsed = parseYaml(match[1]);
-      if (!parsed || typeof parsed !== "object") return null;
-      return parsed as Record<string, unknown>;
+      const parsed: unknown = parseYaml(match[1]);
+
+      if (!isRecord(parsed)) {
+        return null;
+      }
+
+      return parsed;
     } catch (error) {
       console.error("Shadowdark Statblocks frontmatter parse error:", error);
       return null;

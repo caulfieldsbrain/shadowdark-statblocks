@@ -43,7 +43,12 @@ function normalizeEmbeddedMonsterNames(input: string): string {
   // => "... direction.\nDUNEFIEND\nDemons that appear ..."
   text = text.replace(
     /([.!?])\s+([A-Z][A-Z0-9,'’-]*(?:\s+[A-Z][A-Z0-9,'’-]*){0,3})\s+([A-Z][a-z][^\r\n]*)/g,
-    (match, punct, maybeName, descriptionStart) => {
+    (
+      match: string,
+      punct: string,
+      maybeName: string,
+      descriptionStart: string
+    ) => {
       if (!looksLikeMonsterNameInline(maybeName, 1)) {
         return match;
       }
@@ -62,7 +67,12 @@ function normalizeEmbeddedMonsterNames(input: string): string {
   // DEX / CHA / CON / etc.
   text = text.replace(
     /([a-z0-9)\]])\s+([A-Z][A-Z0-9,'’-]*(?:\s+[A-Z][A-Z0-9,'’-]+){1,3})\s+([a-z][^.\r\n]{0,30}[.)]?)/g,
-    (match, prefixEnd, maybeName, suffix) => {
+    (
+      match: string,
+      prefixEnd: string,
+      maybeName: string,
+      suffix: string
+    ) => {
       if (!looksLikeMonsterNameInline(maybeName, 2)) {
         return match;
       }
@@ -78,7 +88,11 @@ function normalizeEmbeddedMonsterNames(input: string): string {
   // => "... wooden stake while at 0 HP.\nSNAKE, COBRA"
   text = text.replace(
     /([.!?])\s+([A-Z][A-Z0-9,'’-]*(?:\s+[A-Z][A-Z0-9,'’-]*){0,3})$/gm,
-    (match, punct, maybeName) => {
+    (
+      match: string,
+      punct: string,
+      maybeName: string
+    ) => {
       if (!looksLikeMonsterNameInline(maybeName, 1)) {
         return match;
       }

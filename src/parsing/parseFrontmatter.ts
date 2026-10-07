@@ -15,7 +15,7 @@ export function parseFrontmatter(
     };
   }
 
-  const monster = normalizeMonster(frontmatter as Partial<ShadowdarkMonster>);
+  const monster: ShadowdarkMonster = normalizeMonster(frontmatter);
 
   if (!monster.name || monster.name === "Unnamed Monster") {
     warnings.push("Monster is missing a name.");

@@ -36,7 +36,7 @@ export class MonsterBrowserModal extends Modal {
     contentEl.empty();
     contentEl.addClass("sd-monster-browser-modal");
     
-    this.allMonsters = await this.plugin.getAllMonsterIndexEntries();
+    this.allMonsters = this.plugin.getAllMonsterIndexEntries();
     this.filteredMonsters = [...this.allMonsters];
 
     const filtersShell = contentEl.createDiv({
@@ -361,10 +361,11 @@ export class MonsterBrowserModal extends Modal {
         }
       }
 
-      row.addEventListener("click", async () => {
-        await this.app.workspace.getLeaf(true).openFile(monster.file);
-        this.close();
-    });
+      row.addEventListener("click", () => {
+        void this.app.workspace.getLeaf(true).openFile(monster.file).then(() => {
+          this.close();
+        });
+      });
     row.addEventListener("contextmenu", (evt: MouseEvent) => {
         evt.preventDefault();
 
@@ -373,35 +374,36 @@ export class MonsterBrowserModal extends Modal {
         menu.addItem((item) =>
             item
             .setTitle("Open")
-            .onClick(async () => {
-                await this.app.workspace.getLeaf(true).openFile(monster.file);
+            .onClick(() => {
+              void this.app.workspace.getLeaf(true).openFile(monster.file).then(() => {
                 this.close();
+              });
             })
         );
 
         menu.addItem((item) =>
             item
             .setTitle("Open to the right")
-            .onClick(async () => {
-                const leaf = this.app.workspace.getLeaf("split", "vertical");
-                await leaf.openFile(monster.file);
+            .onClick(() => {
+              const leaf = this.app.workspace.getLeaf("split", "vertical");
+              void leaf.openFile(monster.file);
             })
         );
 
         menu.addItem((item) =>
             item
             .setTitle("Copy link")
-            .onClick(async () => {
-                const link = `[[${monster.file.basename}]]`;
-                await navigator.clipboard.writeText(link);
+            .onClick(() => {
+              const link = `[[${monster.file.basename}]]`;
+              void navigator.clipboard.writeText(link);
             })
         );
         menu.addItem((item) =>
             item
             .setTitle("Copy embed")
-            .onClick(async () => {
-                const embed = `![[${monster.file.basename}]]`;
-                await navigator.clipboard.writeText(embed);
+            .onClick(() => {
+              const embed = `![[${monster.file.basename}]]`;
+              void navigator.clipboard.writeText(embed);
             })
         );
         menu.showAtMouseEvent(evt);

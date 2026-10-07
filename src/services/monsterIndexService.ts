@@ -10,14 +10,26 @@ export type MonsterIndexEntry = {
   frontmatter: Record<string, unknown>;
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value)
+  );
+}
+
 function extractFrontmatter(content: string): Record<string, unknown> | null {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return null;
 
   try {
-    const parsed = parseYaml(match[1]);
-    if (!parsed || typeof parsed !== "object") return null;
-    return parsed as Record<string, unknown>;
+    const parsed: unknown = parseYaml(match[1]);
+
+    if (!isRecord(parsed)) {
+      return null;
+    }
+
+    return parsed;
   } catch (error) {
     console.error("Shadowdark Statblocks frontmatter parse error:", error);
     return null;
@@ -115,7 +127,7 @@ export function getAllMonsterIndexEntries(
 
   for (const file of files) {
     const cache = app.metadataCache.getFileCache(file);
-    const frontmatter = cache?.frontmatter as Record<string, unknown> | undefined;
+    const frontmatter = cache?.frontmatter;
 
     if (!frontmatter || frontmatter.shadowdarkType !== "monster") continue;
 

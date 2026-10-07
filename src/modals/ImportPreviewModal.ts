@@ -256,7 +256,7 @@ export class ImportPreviewModal extends Modal {
   }
 
   private refreshTagSuggestions(): void {
-    if (!this.tagSuggestionsEl || !this.tagsInput) return;
+    if (!this.tagSuggestionsEl || this.tagsInput === undefined) return;
 
     this.tagSuggestionsEl.innerHTML = "";
 
@@ -274,24 +274,27 @@ export class ImportPreviewModal extends Modal {
       this.highlightedTagSuggestionIndex = this.filteredTagSuggestions.length - 1;
     }
 
-    const label = document.createElement("div");
-    label.className = "sd-tag-suggestions-label";
-    label.textContent = "Matching tags";
-    this.tagSuggestionsEl.appendChild(label);
+    this.tagSuggestionsEl.createDiv({
+      cls: "sd-tag-suggestions-label",
+      text: "Matching tags"
+    });
 
-    const chips = document.createElement("div");
-    chips.className = "sd-tag-suggestions-chips";
+    const chips = this.tagSuggestionsEl.createDiv({
+      cls: "sd-tag-suggestions-chips"
+    });
 
     this.filteredTagSuggestions.forEach((tag, index) => {
-      const chip = document.createElement("button");
+      const chip = chips.createEl("button", {
+        cls: "sd-tag-suggestion-chip",
+        text: tag
+      });
+
       chip.type = "button";
-      chip.className = "sd-tag-suggestion-chip";
 
       if (index === this.highlightedTagSuggestionIndex) {
         chip.classList.add("is-active");
       }
 
-      chip.textContent = tag;
       chip.addEventListener("click", () => {
         const updatedValue = replaceCurrentTagFragment(rawValue, tag);
         this.monster.tags = splitTags(updatedValue);
@@ -300,15 +303,16 @@ export class ImportPreviewModal extends Modal {
         this.refreshTagSuggestions();
         this.refreshPreview();
       });
-
-      chips.appendChild(chip);
     });
-
-    this.tagSuggestionsEl.appendChild(chips);
   }
 
   private refreshOtherSourceSuggestions(): void {
-    if (!this.otherSourceSuggestionsEl || !this.otherSourceInput) return;
+    if (
+      !this.otherSourceSuggestionsEl ||
+      this.otherSourceInput === undefined
+    ) {
+      return;
+    }
 
     this.otherSourceSuggestionsEl.innerHTML = "";
 
@@ -324,10 +328,11 @@ export class ImportPreviewModal extends Modal {
     if (this.filteredOtherSourceSuggestions.length === 0) {
       this.highlightedOtherSourceSuggestionIndex = -1;
 
-      const empty = document.createElement("div");
-      empty.className = "sd-tag-suggestions-empty";
-      empty.textContent = "No matching sources";
-      this.otherSourceSuggestionsEl.appendChild(empty);
+      this.otherSourceSuggestionsEl.createDiv({
+        cls: "sd-tag-suggestions-empty",
+        text: "No matching sources"
+      });
+
       return;
     }
 
@@ -341,24 +346,27 @@ export class ImportPreviewModal extends Modal {
         this.filteredOtherSourceSuggestions.length - 1;
     }
 
-    const label = document.createElement("div");
-    label.className = "sd-tag-suggestions-label";
-    label.textContent = "Matching sources";
-    this.otherSourceSuggestionsEl.appendChild(label);
+    this.otherSourceSuggestionsEl.createDiv({
+      cls: "sd-tag-suggestions-label",
+      text: "Matching sources"
+    });
 
-    const chips = document.createElement("div");
-    chips.className = "sd-tag-suggestions-chips";
+    const chips = this.otherSourceSuggestionsEl.createDiv({
+      cls: "sd-tag-suggestions-chips"
+    });
 
     this.filteredOtherSourceSuggestions.forEach((source, index) => {
-      const chip = document.createElement("button");
+      const chip = chips.createEl("button", {
+        cls: "sd-tag-suggestion-chip",
+        text: source
+      });
+
       chip.type = "button";
-      chip.className = "sd-tag-suggestion-chip";
 
       if (index === this.highlightedOtherSourceSuggestionIndex) {
         chip.classList.add("is-active");
       }
 
-      chip.textContent = source;
       chip.addEventListener("click", () => {
         this.monster.source = source;
         this.otherSourceInput.setValue(source);
@@ -366,11 +374,7 @@ export class ImportPreviewModal extends Modal {
         this.refreshOtherSourceSuggestions();
         this.refreshPreview();
       });
-
-      chips.appendChild(chip);
     });
-
-    this.otherSourceSuggestionsEl.appendChild(chips);
   }
 
   private moveTagSuggestionSelection(direction: 1 | -1): void {
@@ -392,7 +396,7 @@ export class ImportPreviewModal extends Modal {
     if (
       this.highlightedTagSuggestionIndex < 0 ||
       this.highlightedTagSuggestionIndex >= this.filteredTagSuggestions.length ||
-      !this.tagsInput
+      !this.tagsInput === undefined
     ) {
       return;
     }
@@ -436,7 +440,7 @@ export class ImportPreviewModal extends Modal {
       this.highlightedOtherSourceSuggestionIndex < 0 ||
       this.highlightedOtherSourceSuggestionIndex >=
         this.filteredOtherSourceSuggestions.length ||
-      !this.otherSourceInput
+      !this.otherSourceInput === undefined
     ) {
       return;
     }
@@ -517,58 +521,58 @@ export class ImportPreviewModal extends Modal {
 
     this.modalEl.addClass("sd-import-preview-modal-shell");
 
-    const intro = document.createElement("p");
-    intro.className = "sd-import-preview-description";
-    intro.textContent =
-      this.mode === "edit"
-        ? "Review and edit the monster, then update the note."
-        : "Review and edit the imported monster before creating the note.";
-    contentEl.appendChild(intro);
+    contentEl.createEl("p", {
+      cls: "sd-import-preview-description",
+      text:
+        this.mode === "edit"
+          ? "Review and edit the monster, then update the note."
+          : "Review and edit the imported monster before creating the note."
+    });
+
     if (this.progressLabel) {
-      const progressEl = document.createElement("div");
-      progressEl.className = "sd-import-preview-progress";
-      progressEl.textContent = this.progressLabel;
-      contentEl.appendChild(progressEl);
+      contentEl.createDiv({
+        cls: "sd-import-preview-progress",
+        text: this.progressLabel
+      });
     }
 
     if (this.warnings.length > 0) {
-      const warningBox = document.createElement("div");
-      warningBox.className = "sd-import-preview-warnings";
+      const warningBox = contentEl.createDiv({
+        cls: "sd-import-preview-warnings"
+      });
 
-      const warningTitle = document.createElement("h4");
-      warningTitle.textContent = "Warnings";
-      warningBox.appendChild(warningTitle);
+      warningBox.createEl("h4", {
+        text: "Warnings"
+      });
 
-      const warningList = document.createElement("ul");
+      const warningList = warningBox.createEl("ul");
+
       for (const warning of this.warnings) {
-        const li = document.createElement("li");
-        li.textContent = warning;
-        warningList.appendChild(li);
+        warningList.createEl("li", {
+          text: warning
+        });
       }
-
-      warningBox.appendChild(warningList);
-      contentEl.appendChild(warningBox);
     }
 
-    const layout = document.createElement("div");
-    layout.className = "sd-import-preview-layout";
-    contentEl.appendChild(layout);
+    const layout = contentEl.createDiv({
+      cls: "sd-import-preview-layout"
+    });
 
-    const formCol = document.createElement("div");
-    formCol.className = "sd-import-preview-form";
-    layout.appendChild(formCol);
+    const formCol = layout.createDiv({
+      cls: "sd-import-preview-form"
+    });
 
-    const previewCol = document.createElement("div");
-    previewCol.className = "sd-import-preview-panel";
-    layout.appendChild(previewCol);
+    const previewCol = layout.createDiv({
+      cls: "sd-import-preview-panel"
+    });
 
-    const previewHeading = document.createElement("h3");
-    previewHeading.textContent = "Live preview";
-    previewCol.appendChild(previewHeading);
+    previewCol.createEl("h3", {
+      text: "Live preview"
+    });
 
-    this.previewEl = document.createElement("div");
-    this.previewEl.className = "sd-import-preview-statblock";
-    previewCol.appendChild(this.previewEl);
+    this.previewEl = previewCol.createDiv({
+      cls: "sd-import-preview-statblock"
+    });
 
     formCol.createEl("h3", { text: "Core" });
 
@@ -688,9 +692,9 @@ export class ImportPreviewModal extends Modal {
 
     this.otherSourceSettingEl = otherSourceSetting.settingEl;
 
-    this.otherSourceSuggestionsEl = document.createElement("div");
-    this.otherSourceSuggestionsEl.className = "sd-tag-suggestions";
-    formCol.appendChild(this.otherSourceSuggestionsEl);
+    this.otherSourceSuggestionsEl = formCol.createDiv({
+      cls: "sd-tag-suggestions"
+    });
 
     new Setting(formCol)
       .setName("Tags")
@@ -746,9 +750,9 @@ export class ImportPreviewModal extends Modal {
         };
       });
 
-    this.tagSuggestionsEl = document.createElement("div");
-    this.tagSuggestionsEl.className = "sd-tag-suggestions";
-    formCol.appendChild(this.tagSuggestionsEl);
+    this.tagSuggestionsEl = formCol.createDiv({
+      cls: "sd-tag-suggestions"
+    });
 
     formCol.createEl("h3", { text: "Stats" });
 
