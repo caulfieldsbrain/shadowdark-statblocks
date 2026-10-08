@@ -242,8 +242,6 @@ function parseAbilityEntries(trailingText: string): string[] {
 }
 
 function classifyAbilityEntry(entry: string): "trait" | "special" | "spell" {
-  const lower = entry.toLowerCase();
-
   if (/$begin:math:text$\(int\|wis\|cha\)\\s\+spell$end:math:text$/i.test(entry)) {
     return "spell";
   }

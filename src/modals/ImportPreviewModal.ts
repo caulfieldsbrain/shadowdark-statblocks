@@ -396,7 +396,7 @@ export class ImportPreviewModal extends Modal {
     if (
       this.highlightedTagSuggestionIndex < 0 ||
       this.highlightedTagSuggestionIndex >= this.filteredTagSuggestions.length ||
-      !this.tagsInput === undefined
+      this.tagsInput === undefined
     ) {
       return;
     }
@@ -440,7 +440,7 @@ export class ImportPreviewModal extends Modal {
       this.highlightedOtherSourceSuggestionIndex < 0 ||
       this.highlightedOtherSourceSuggestionIndex >=
         this.filteredOtherSourceSuggestions.length ||
-      !this.otherSourceInput === undefined
+      this.otherSourceInput === undefined
     ) {
       return;
     }

@@ -478,7 +478,6 @@ function parseAbilityEntries(trailingText) {
 }
 function classifyAbilityEntry(entry) {
   var _a, _b;
-  const lower = entry.toLowerCase();
   if (/$begin:math:text$\(int\|wis\|cha\)\\s\+spell$end:math:text$/i.test(entry)) {
     return "spell";
   }
@@ -587,25 +586,28 @@ function parseRawShadowdarkText(source) {
 }
 
 // src/render/renderMonsterBlock.ts
-function createDiv(className, text) {
-  const el = createEl("div");
+function createDetachedEl(tag) {
+  return document.createElement(tag);
+}
+function makeDiv(className, text) {
+  const el = createDetachedEl("div");
   if (className) el.className = className;
   if (text !== void 0) el.textContent = text;
   return el;
 }
-function createSpan(className, text) {
-  const el = createEl("span");
+function makeSpan(className, text) {
+  const el = createDetachedEl("span");
   if (className) el.className = className;
   if (text !== void 0) el.textContent = text;
   return el;
 }
 function createList(className) {
-  const el = createEl("ul");
+  const el = createDetachedEl("ul");
   if (className) el.className = className;
   return el;
 }
 function createListItem(className) {
-  const el = createEl("li");
+  const el = createDetachedEl("li");
   if (className) el.className = className;
   return el;
 }
@@ -650,7 +652,7 @@ function attackBonusToFormula(bonus) {
   return `1d20${normalized}`;
 }
 function createDiceRollButton(text, formula, onRollDice) {
-  const button = createEl("button");
+  const button = createDetachedEl("button");
   button.type = "button";
   button.className = "sd-monster-dice-button";
   button.textContent = text;
@@ -727,9 +729,9 @@ function appendTextWithDamageDiceButtons(parent, text, onRollDice) {
 function createAbilityTile(ability, modifier, settings, options) {
   const text = `${ability} ${modifier}`;
   if (!settings.enableDiceRollerIntegration || !options.onRollDice) {
-    return createDiv("sd-monster-ability", text);
+    return makeDiv("sd-monster-ability", text);
   }
-  const button = createEl("button");
+  const button = createDetachedEl("button");
   button.type = "button";
   button.className = "sd-monster-ability sd-monster-ability-roll";
   button.textContent = text;
@@ -746,9 +748,9 @@ function createAbilityTile(ability, modifier, settings, options) {
 function appendRenderedAttack(li, attackText, settings, options) {
   const { connector, body } = splitAttackConnector(attackText);
   if (connector) {
-    li.appendChild(createSpan("sd-monster-attack-connector", `${connector} `));
+    li.appendChild(makeSpan("sd-monster-attack-connector", `${connector} `));
   }
-  const attackTextEl = createSpan("sd-monster-attack-text");
+  const attackTextEl = makeSpan("sd-monster-attack-text");
   if (settings.enableDiceRollerIntegration && options.onRollDice) {
     appendAttackBodyWithDiceButtons(attackTextEl, body, options.onRollDice);
   } else {
@@ -794,20 +796,20 @@ function splitLabelAndBody(text) {
 }
 function addSection(parent, title, items, className, settings, options) {
   if (items.length === 0) return;
-  const section = createDiv("sd-monster-section");
-  section.appendChild(createDiv("sd-monster-section-title", title));
+  const section = makeDiv("sd-monster-section");
+  section.appendChild(makeDiv("sd-monster-section-title", title));
   const list = createList(className);
   for (const item of items) {
     const li = createListItem();
     const { label, body } = splitLabelAndBody(item);
     if (label) {
-      li.appendChild(createSpan("sd-monster-ability-label", label));
+      li.appendChild(makeSpan("sd-monster-ability-label", label));
     }
     if (body) {
       if (label) {
         li.appendChild(document.createTextNode(" "));
       }
-      const bodyEl = createSpan("sd-monster-ability-text");
+      const bodyEl = makeSpan("sd-monster-ability-text");
       if (settings.enableDiceRollerIntegration && options.onRollDice) {
         appendTextWithDamageDiceButtons(bodyEl, body, options.onRollDice);
       } else {
@@ -829,21 +831,21 @@ function addSection(parent, title, items, className, settings, options) {
 }
 function renderMonsterBlock(container, monster, settings, warnings = [], options = {}) {
   container.innerHTML = "";
-  const card = createDiv(
+  const card = makeDiv(
     [
       "sd-monster-card",
       settings.compactMode ? "is-compact" : ""
     ].filter(Boolean).join(" ")
   );
-  const header = createDiv("sd-monster-header");
-  header.appendChild(createDiv("sd-monster-name", monster.name));
-  const meta = createDiv("sd-monster-meta");
+  const header = makeDiv("sd-monster-header");
+  header.appendChild(makeDiv("sd-monster-name", monster.name));
+  const meta = makeDiv("sd-monster-meta");
   const metaParts = [];
   if (monster.level) {
-    metaParts.push(createSpan(void 0, `Level ${monster.level}`));
+    metaParts.push(makeSpan(void 0, `Level ${monster.level}`));
   }
   if (monster.alignment) {
-    const alignmentSpan = createSpan(void 0, `AL ${monster.alignment}`);
+    const alignmentSpan = makeSpan(void 0, `AL ${monster.alignment}`);
     const tooltip = getAlignmentLabel(monster.alignment);
     if (tooltip) {
       alignmentSpan.title = tooltip;
@@ -853,21 +855,21 @@ function renderMonsterBlock(container, monster, settings, warnings = [], options
   metaParts.forEach((part, index) => {
     meta.appendChild(part);
     if (index < metaParts.length - 1) {
-      meta.appendChild(createSpan(void 0, " \u2022 "));
+      meta.appendChild(makeSpan(void 0, " \u2022 "));
     }
   });
   header.appendChild(meta);
   card.appendChild(header);
-  const core = createDiv("sd-monster-core");
-  core.appendChild(createDiv("sd-monster-core-item", `AC ${monster.ac}`));
-  core.appendChild(createDiv("sd-monster-core-item", `HP ${monster.hp}`));
+  const core = makeDiv("sd-monster-core");
+  core.appendChild(makeDiv("sd-monster-core-item", `AC ${monster.ac}`));
+  core.appendChild(makeDiv("sd-monster-core-item", `HP ${monster.hp}`));
   if (monster.mv) {
-    core.appendChild(createDiv("sd-monster-core-item", `MV ${monster.mv}`));
+    core.appendChild(makeDiv("sd-monster-core-item", `MV ${monster.mv}`));
   }
   card.appendChild(core);
   if (monster.atk.length > 0) {
-    const atkSection = createDiv("sd-monster-section");
-    atkSection.appendChild(createDiv("sd-monster-section-title", "ATTACKS"));
+    const atkSection = makeDiv("sd-monster-section");
+    atkSection.appendChild(makeDiv("sd-monster-section-title", "ATTACKS"));
     const atkList = createList("sd-monster-attacks");
     for (const attack of monster.atk) {
       const li = createListItem("sd-monster-attack");
@@ -877,9 +879,9 @@ function renderMonsterBlock(container, monster, settings, warnings = [], options
     atkSection.appendChild(atkList);
     card.appendChild(atkSection);
   }
-  const abilities = createDiv("sd-monster-section");
-  abilities.appendChild(createDiv("sd-monster-section-title", "ABILITIES"));
-  const grid = createDiv("sd-monster-abilities");
+  const abilities = makeDiv("sd-monster-section");
+  abilities.appendChild(makeDiv("sd-monster-section-title", "ABILITIES"));
+  const grid = makeDiv("sd-monster-abilities");
   grid.appendChild(
     createAbilityTile("STR", monster.stats.str, settings, options)
   );
@@ -905,26 +907,26 @@ function renderMonsterBlock(container, monster, settings, warnings = [], options
   addSection(card, "SPELLS", monster.spells, "sd-monster-list", settings, options);
   addSection(card, "GEAR", monster.gear, "sd-monster-list", settings, options);
   if (monster.description) {
-    const desc = createDiv("sd-monster-section");
-    desc.appendChild(createDiv("sd-monster-description", monster.description));
+    const desc = makeDiv("sd-monster-section");
+    desc.appendChild(makeDiv("sd-monster-description", monster.description));
     card.appendChild(desc);
   }
   if (settings.showSource && monster.source) {
-    const source = createDiv("sd-monster-footer");
-    source.appendChild(createSpan("sd-monster-source", `Source: ${monster.source}`));
+    const source = makeDiv("sd-monster-footer");
+    source.appendChild(makeSpan("sd-monster-source", `Source: ${monster.source}`));
     card.appendChild(source);
   }
   if (settings.showTags && monster.tags.length > 0) {
-    const tags = createDiv("sd-monster-tags");
+    const tags = makeDiv("sd-monster-tags");
     for (const tag of monster.tags) {
-      tags.appendChild(createSpan("sd-monster-tag", tag));
+      tags.appendChild(makeSpan("sd-monster-tag", tag));
     }
     card.appendChild(tags);
   }
   if (warnings.length > 0) {
-    const warningBox = createDiv("sd-monster-warning-box");
+    const warningBox = makeDiv("sd-monster-warning-box");
     for (const warning of warnings) {
-      warningBox.appendChild(createDiv("sd-monster-warning", warning));
+      warningBox.appendChild(makeDiv("sd-monster-warning", warning));
     }
     card.appendChild(warningBox);
   }
@@ -1577,7 +1579,7 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
     this.refreshTagSuggestions();
   }
   applyHighlightedTagSuggestion() {
-    if (this.highlightedTagSuggestionIndex < 0 || this.highlightedTagSuggestionIndex >= this.filteredTagSuggestions.length || !this.tagsInput === void 0) {
+    if (this.highlightedTagSuggestionIndex < 0 || this.highlightedTagSuggestionIndex >= this.filteredTagSuggestions.length || this.tagsInput === void 0) {
       return;
     }
     const selectedTag = this.filteredTagSuggestions[this.highlightedTagSuggestionIndex];
@@ -1604,7 +1606,7 @@ var ImportPreviewModal = class extends import_obsidian4.Modal {
     this.refreshOtherSourceSuggestions();
   }
   applyHighlightedOtherSourceSuggestion() {
-    if (this.highlightedOtherSourceSuggestionIndex < 0 || this.highlightedOtherSourceSuggestionIndex >= this.filteredOtherSourceSuggestions.length || !this.otherSourceInput === void 0) {
+    if (this.highlightedOtherSourceSuggestionIndex < 0 || this.highlightedOtherSourceSuggestionIndex >= this.filteredOtherSourceSuggestions.length || this.otherSourceInput === void 0) {
       return;
     }
     const selectedSource = this.filteredOtherSourceSuggestions[this.highlightedOtherSourceSuggestionIndex];

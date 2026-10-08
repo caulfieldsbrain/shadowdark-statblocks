@@ -5,28 +5,34 @@ type MonsterRenderOptions = {
   onRollDice?: (formula: string) => void;
 };
 
-function createDiv(className?: string, text?: string): HTMLDivElement {
-  const el = createEl("div");
+function createDetachedEl<K extends keyof HTMLElementTagNameMap>(
+  tag: K
+): HTMLElementTagNameMap[K] {
+  return document.createElement(tag);
+}
+
+function makeDiv(className?: string, text?: string): HTMLDivElement {
+  const el = createDetachedEl("div");
   if (className) el.className = className;
   if (text !== undefined) el.textContent = text;
   return el;
 }
 
-function createSpan(className?: string, text?: string): HTMLSpanElement {
-  const el = createEl("span");
+function makeSpan(className?: string, text?: string): HTMLSpanElement {
+  const el = createDetachedEl("span");
   if (className) el.className = className;
   if (text !== undefined) el.textContent = text;
   return el;
 }
 
 function createList(className?: string): HTMLUListElement {
-  const el = createEl("ul");
+  const el = createDetachedEl("ul");
   if (className) el.className = className;
   return el;
 }
 
 function createListItem(className?: string): HTMLLIElement {
-  const el = createEl("li");
+  const el = createDetachedEl("li");
   if (className) el.className = className;
   return el;
 }
@@ -87,12 +93,13 @@ function createDiceRollButton(
   formula: string,
   onRollDice: (formula: string) => void
 ): HTMLButtonElement {
-  const button = createEl("button");  button.type = "button";
+  const button = createDetachedEl("button");
+  button.type = "button";
   button.className = "sd-monster-dice-button";
   button.textContent = text;
   button.title = `Roll ${formula}`;
 
-  button.addEventListener("click", (evt) => {
+  button.addEventListener("click", (evt: MouseEvent) => {
     evt.preventDefault();
     evt.stopPropagation();
     onRollDice(formula);
@@ -203,10 +210,10 @@ function createAbilityTile(
   const text = `${ability} ${modifier}`;
 
   if (!settings.enableDiceRollerIntegration || !options.onRollDice) {
-    return createDiv("sd-monster-ability", text);
+    return makeDiv("sd-monster-ability", text);
   }
 
-  const button = createEl("button");
+  const button = createDetachedEl("button");
   button.type = "button";
   button.className = "sd-monster-ability sd-monster-ability-roll";
   button.textContent = text;
@@ -233,10 +240,10 @@ function appendRenderedAttack(
   const { connector, body } = splitAttackConnector(attackText);
 
   if (connector) {
-    li.appendChild(createSpan("sd-monster-attack-connector", `${connector} `));
+    li.appendChild(makeSpan("sd-monster-attack-connector", `${connector} `));
   }
 
-  const attackTextEl = createSpan("sd-monster-attack-text");
+  const attackTextEl = makeSpan("sd-monster-attack-text");
 
   if (settings.enableDiceRollerIntegration && options.onRollDice) {
     appendAttackBodyWithDiceButtons(attackTextEl, body, options.onRollDice);
@@ -309,8 +316,8 @@ function addSection(
 ): void {
   if (items.length === 0) return;
 
-  const section = createDiv("sd-monster-section");
-  section.appendChild(createDiv("sd-monster-section-title", title));
+  const section = makeDiv("sd-monster-section");
+  section.appendChild(makeDiv("sd-monster-section-title", title));
 
   const list = createList(className);
 
@@ -320,14 +327,14 @@ function addSection(
     const { label, body } = splitLabelAndBody(item);
 
     if (label) {
-      li.appendChild(createSpan("sd-monster-ability-label", label));
+      li.appendChild(makeSpan("sd-monster-ability-label", label));
     }
 
     if (body) {
       if (label) {
         li.appendChild(document.createTextNode(" "));
       }
-      const bodyEl = createSpan("sd-monster-ability-text");
+      const bodyEl = makeSpan("sd-monster-ability-text");
 
       if (settings.enableDiceRollerIntegration && options.onRollDice) {
 
@@ -366,7 +373,7 @@ export function renderMonsterBlock(
 ): void {
   container.innerHTML = "";
 
-  const card = createDiv(
+  const card = makeDiv(
     [
       "sd-monster-card",
       settings.compactMode ? "is-compact" : ""
@@ -375,18 +382,18 @@ export function renderMonsterBlock(
       .join(" ")
   );
 
-  const header = createDiv("sd-monster-header");
-  header.appendChild(createDiv("sd-monster-name", monster.name));
+  const header = makeDiv("sd-monster-header");
+  header.appendChild(makeDiv("sd-monster-name", monster.name));
 
-  const meta = createDiv("sd-monster-meta");
+  const meta = makeDiv("sd-monster-meta");
   const metaParts: HTMLElement[] = [];
 
   if (monster.level) {
-    metaParts.push(createSpan(undefined, `Level ${monster.level}`));
+    metaParts.push(makeSpan(undefined, `Level ${monster.level}`));
   }
 
   if (monster.alignment) {
-    const alignmentSpan = createSpan(undefined, `AL ${monster.alignment}`);
+    const alignmentSpan = makeSpan(undefined, `AL ${monster.alignment}`);
     const tooltip = getAlignmentLabel(monster.alignment);
     if (tooltip) {
       alignmentSpan.title = tooltip;
@@ -398,26 +405,26 @@ export function renderMonsterBlock(
     meta.appendChild(part);
 
     if (index < metaParts.length - 1) {
-      meta.appendChild(createSpan(undefined, " • "));
+      meta.appendChild(makeSpan(undefined, " • "));
     }
   });
 
   header.appendChild(meta);
   card.appendChild(header);
 
-  const core = createDiv("sd-monster-core");
-  core.appendChild(createDiv("sd-monster-core-item", `AC ${monster.ac}`));
-  core.appendChild(createDiv("sd-monster-core-item", `HP ${monster.hp}`));
+  const core = makeDiv("sd-monster-core");
+  core.appendChild(makeDiv("sd-monster-core-item", `AC ${monster.ac}`));
+  core.appendChild(makeDiv("sd-monster-core-item", `HP ${monster.hp}`));
 
   if (monster.mv) {
-    core.appendChild(createDiv("sd-monster-core-item", `MV ${monster.mv}`));
+    core.appendChild(makeDiv("sd-monster-core-item", `MV ${monster.mv}`));
   }
 
   card.appendChild(core);
 
   if (monster.atk.length > 0) {
-    const atkSection = createDiv("sd-monster-section");
-    atkSection.appendChild(createDiv("sd-monster-section-title", "ATTACKS"));
+    const atkSection = makeDiv("sd-monster-section");
+    atkSection.appendChild(makeDiv("sd-monster-section-title", "ATTACKS"));
 
     const atkList = createList("sd-monster-attacks");
     for (const attack of monster.atk) {
@@ -430,10 +437,10 @@ export function renderMonsterBlock(
     card.appendChild(atkSection);
   }
 
-  const abilities = createDiv("sd-monster-section");
-  abilities.appendChild(createDiv("sd-monster-section-title", "ABILITIES"));
+  const abilities = makeDiv("sd-monster-section");
+  abilities.appendChild(makeDiv("sd-monster-section-title", "ABILITIES"));
 
-  const grid = createDiv("sd-monster-abilities");
+  const grid = makeDiv("sd-monster-abilities");
   grid.appendChild(
     createAbilityTile("STR", monster.stats.str, settings, options)
   );
@@ -462,29 +469,29 @@ export function renderMonsterBlock(
   addSection(card, "GEAR", monster.gear, "sd-monster-list", settings, options);
 
   if (monster.description) {
-    const desc = createDiv("sd-monster-section");
-    desc.appendChild(createDiv("sd-monster-description", monster.description));
+    const desc = makeDiv("sd-monster-section");
+    desc.appendChild(makeDiv("sd-monster-description", monster.description));
     card.appendChild(desc);
   }
 
   if (settings.showSource && monster.source) {
-    const source = createDiv("sd-monster-footer");
-    source.appendChild(createSpan("sd-monster-source", `Source: ${monster.source}`));
+    const source = makeDiv("sd-monster-footer");
+    source.appendChild(makeSpan("sd-monster-source", `Source: ${monster.source}`));
     card.appendChild(source);
   }
 
   if (settings.showTags && monster.tags.length > 0) {
-    const tags = createDiv("sd-monster-tags");
+    const tags = makeDiv("sd-monster-tags");
     for (const tag of monster.tags) {
-      tags.appendChild(createSpan("sd-monster-tag", tag));
+      tags.appendChild(makeSpan("sd-monster-tag", tag));
     }
     card.appendChild(tags);
   }
 
   if (warnings.length > 0) {
-    const warningBox = createDiv("sd-monster-warning-box");
+    const warningBox = makeDiv("sd-monster-warning-box");
     for (const warning of warnings) {
-      warningBox.appendChild(createDiv("sd-monster-warning", warning));
+      warningBox.appendChild(makeDiv("sd-monster-warning", warning));
     }
     card.appendChild(warningBox);
   }
